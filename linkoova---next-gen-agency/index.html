@@ -1,0 +1,89 @@
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>LINKOOVA | Next-Gen Agency</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Playfair+Display:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+    <style>
+      :root {
+        --color-black: #0B0B0C;
+        --color-gold: #D1A954;
+        --color-sand: #E8E1D5;
+      }
+      body {
+        background-color: var(--color-black);
+        color: white;
+        font-family: 'Inter', sans-serif;
+        overflow-x: hidden;
+      }
+      /* Hide default cursor to use CustomCursor */
+      * {
+          cursor: none !important;
+      }
+      .font-serif {
+        font-family: 'Playfair Display', serif;
+      }
+      .scrollbar-hide::-webkit-scrollbar {
+          display: none;
+      }
+      .glass {
+        background: rgba(11, 11, 12, 0.7);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+      }
+      /* Custom selection color */
+      ::selection {
+        background: #D1A954;
+        color: #0B0B0C;
+      }
+
+      /* PLASMA EFFECT ANIMATION */
+      @keyframes plasma {
+        0% { background-position: 0% 50%; }
+        50% { background-position: 100% 50%; }
+        100% { background-position: 0% 50%; }
+      }
+      .plasma-effect {
+        background: linear-gradient(-45deg, #0B0B0C, #141415, #1d1d20, #0B0B0C);
+        background-size: 400% 400%;
+        animation: plasma 15s ease infinite;
+      }
+
+      /* GRID PATTERN */
+      .grid-pattern {
+        position: absolute;
+        inset: 0;
+        background-image: 
+          linear-gradient(to right, rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+          linear-gradient(to bottom, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+        background-size: 60px 60px;
+        mask-image: linear-gradient(to bottom, black 20%, transparent 90%);
+        -webkit-mask-image: linear-gradient(to bottom, black 20%, transparent 90%);
+        z-index: 0;
+        pointer-events: none;
+      }
+    </style>
+  <script type="importmap">
+{
+  "imports": {
+    "react": "https://aistudiocdn.com/react@^19.2.0",
+    "react-dom/": "https://aistudiocdn.com/react-dom@^19.2.0/",
+    "react/": "https://aistudiocdn.com/react@^19.2.0/",
+    "lucide-react": "https://aistudiocdn.com/lucide-react@^0.554.0",
+    "framer-motion": "https://aistudiocdn.com/framer-motion@^12.23.24"
+  }
+}
+</script>
+<link rel="stylesheet" href="/index.css">
+</head>
+  <body>
+    <div id="root"></div>
+  <script type="module" src="/index.tsx"></script>
+</body>
+</html>
