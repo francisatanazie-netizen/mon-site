@@ -1,7 +1,7 @@
 [build]
-  # Dit à Netlify d'entrer dans ce dossier avant toute action
+  # Indique le dossier où se trouve le package.json (la base de votre projet)
   base = "linkoova---next-gen-agency"
-  # Exécute la commande à l'intérieur de ce dossier
+  # Dit à Netlify d'exécuter la commande "npm run build"
   command = "npm run build"
-  # Le dossier de publication (dist) se trouve à l'intérieur du dossier de base
-  publish = "linkoova---next-gen-agency/dist"
+  # Indique que le dossier compilé se trouve DANS le dossier de base (simplement "dist")
+  publish = "dist"
