@@ -1,0 +1,133 @@
+[build]
+  base = "linkoova---next-gen-agency"
+  command = "npm install && npm run build"
+  publish = "linkoova---next-gen-agency/dist"
+
+# Ne traite PAS ce dossier comme des Functions
+[functions]
+  # Pas de functions directory, ou pointe vers un dossier vide
+  directory = "netlify-functions"
+```
+```
+7. Scroll en bas
+8. Clique "Commit changes"
+```
+
+---
+
+### ÉTAPE 2 : Attendre le redéploiement automatique
+```
+Netlify va détecter le changement et redéployer automatiquement
+
+⏱️ Attends 2-5 minutes (cette fois c'est plus long car ça compile React)
+
+Tu vas voir :
+- npm install (installe react, vite, etc.)
+- npm run build (compile l'app React)
+- Déploiement du dossier "dist" (résultat compilé)
+```
+
+---
+
+### ÉTAPE 3 : Vérifier que ça marche
+```
+1. Va sur ton dashboard Netlify
+2. Clique "Deploys"
+3. Tu devrais voir un nouveau deploy en cours "Building..."
+4. Attends qu'il passe à "Published"
+5. Clique sur l'URL pour tester
+```
+
+✅ **SI ÇA MARCHE = PARFAIT !**
+
+---
+
+## ⚠️ SI ÇA NE MARCHE TOUJOURS PAS
+
+**Problème possible : Le script "build" n'existe pas dans package.json**
+
+### Vérification :
+```
+1. Sur GitHub, va dans "linkoova---next-gen-agency"
+2. Clique sur "package.json"
+3. Cherche la section "scripts"
+4. Vérifie qu'il y a une ligne "build"
+
+Exemple correct :
+"scripts": {
+  "dev": "vite",
+  "build": "vite build",  ← Cette ligne DOIT exister
+  "preview": "vite preview"
+}
+```
+
+**SI cette ligne n'existe PAS :**
+```
+5. Clique "Edit" (icône crayon)
+6. Ajoute cette ligne dans "scripts" :
+   "build": "vite build",
+7. Commit changes
+```
+
+---
+
+## 🎯 ALTERNATIVE : Build localement puis upload le résultat
+
+**Si Netlify continue à échouer, tu peux build sur TON ordinateur puis upload le résultat.**
+
+### Sur ton PC :
+```
+1. Ouvre le terminal dans le dossier "linkoova---next-gen-agency"
+
+2. Tape :
+npm install
+
+3. Puis :
+npm run build
+
+4. Ça va créer un dossier "dist" avec tout le site compilé
+
+5. Va sur Netlify (l'ancien site en drag & drop)
+6. Drag & drop SEULEMENT le dossier "dist"
+```
+
+**Résultat : Ton site React fonctionne, mais tu perds l'avantage du déploiement automatique GitHub.**
+
+---
+
+## 💡 EXPLICATION SIMPLE
+
+**Pourquoi c'est compliqué ?**
+```
+Site HTML simple :
+📄 index.html → Upload direct → ✅ Ça marche
+
+Application React/Vite :
+📄 App.tsx (code source React)
+↓
+[Compilation nécessaire]
+↓
+📁 dist/ (code HTML/JS compilé)
+↓
+Upload "dist" → ✅ Ça marche
+
+Netlify DOIT compiler avant de déployer.
+C'est ce que fait "npm run build".
+```
+
+---
+
+## 🎯 RÉSUMÉ : CE QUE TU DOIS FAIRE MAINTENANT
+
+**SOLUTION 1 (Recommandée) : Fix Netlify**
+```
+1. Modifie netlify.toml sur GitHub (contenu donné plus haut)
+2. Attends redéploiement automatique (2-5 min)
+3. Vérifie que ça marche
+```
+
+**SOLUTION 2 (Si pressé) : Build local + drag & drop**
+```
+1. npm install && npm run build (sur ton PC)
+2. Upload le dossier "dist" sur Netlify (drag & drop)
+3. Marche immédiatement mais pas automatique
