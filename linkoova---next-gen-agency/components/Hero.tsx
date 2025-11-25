@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { motion } from 'framer-motion';
 import { ArrowRight, CheckCircle2, Globe2 } from 'lucide-react';
@@ -6,8 +5,19 @@ import { ArrowRight, CheckCircle2, Globe2 } from 'lucide-react';
 const Hero: React.FC = () => {
   return (
     <section className="relative w-full h-screen flex items-center justify-center overflow-hidden bg-transparent">
-      {/* Background overlay for readability */}
-      <div className="absolute inset-0 z-0 bg-gradient-to-b from-[#0B0B0C]/50 via-transparent to-[#0B0B0C] pointer-events-none" />
+      
+      {/* DÉBUT DU FOND CORRIGÉ : Image de la Terre et calques sombres */}
+      <div className="absolute inset-0 z-0">
+        {/* 1. L'Image de la Terre (Source Unsplash) */}
+        <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1451187580459-43490279c0fa?q=80&w=2672&auto=format&fit=crop')] bg-cover bg-center opacity-30 scale-105 animate-[pulse_10s_ease-in-out_infinite]" />
+        
+        {/* 2. Le gradient de noir pour l'assombrissement */}
+        <div className="absolute inset-0 bg-gradient-to-b from-[#0B0B0C]/80 via-[#0B0B0C]/50 to-[#0B0B0C]" />
+        
+        {/* 3. L'effet radial subtil (en option) */}
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-indigo-900/20 via-[#0B0B0C]/0 to-[#0B0B0C]" />
+      </div>
+      {/* FIN DU FOND CORRIGÉ */}
 
       <div className="relative z-10 container mx-auto px-6 text-center">
         <motion.div
@@ -17,7 +27,7 @@ const Hero: React.FC = () => {
           className="mb-6 inline-flex items-center gap-2 px-3 py-1 rounded-full border border-[#D1A954]/30 bg-[#D1A954]/5 backdrop-blur-sm"
         >
           <span className="w-2 h-2 rounded-full bg-[#D1A954] animate-pulse" />
-          <span className="text-[#D1A954] text-xs font-medium uppercase tracking-[0.2em]">The Operating System for Global Growth</span>
+          <span className="text-[#D1A954] text-xs font-medium uppercase tracking-[0.2em]">Next-Gen Agency</span>
         </motion.div>
 
         <motion.h1
@@ -121,12 +131,12 @@ const Hero: React.FC = () => {
         >
             <div className="flex items-center gap-2">
                 <CheckCircle2 className="w-4 h-4 text-emerald-500" />
-                <span>Trusted by 500+ Enterprises</span>
+                <span>Trusted by 50+ High-Growth Companies</span>
             </div>
             <div className="hidden md:block w-px h-4 bg-white/10"></div>
             <div className="flex items-center gap-2">
                 <Globe2 className="w-4 h-4 text-indigo-500" />
-                <span>Active in 15 Countries</span>
+                <span>Active in 3 Continents</span>
             </div>
         </motion.div>
       </div>
