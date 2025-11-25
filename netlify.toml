@@ -1,3 +1,7 @@
 [build]
+  # Dit à Netlify d'entrer dans ce dossier avant toute action
+  base = "linkoova---next-gen-agency"
+  # Exécute la commande à l'intérieur de ce dossier
   command = "npm run build"
-  publish = "dist"
+  # Le dossier de publication (dist) se trouve à l'intérieur du dossier de base
+  publish = "linkoova---next-gen-agency/dist"
