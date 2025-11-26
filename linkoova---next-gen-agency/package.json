@@ -13,17 +13,15 @@
     "react-dom": "^19.2.0",
     "lucide-react": "^0.554.0",
     "framer-motion": "^12.23.24",
-    "three": "^0.160.0",
+    "three": "^0.160.0",  <-- ASSUREZ-VOUS QU'IL Y A UNE VIRGULE ICI
     
-    // NOUVELLES DÉPENDANCES POUR LA TRADUCTION
+    // NOUVELLES DÉPENDANCES
     "i18next": "^23.11.5",
     "react-i18next": "^14.1.2",
-    "i18next-browser-languagedetector": "^7.2.1"
+    "i18next-browser-languagedetector": "^7.2.1" 
+    // <--- ATTENTION : PAS DE VIRGULE ICI !
   },
   "devDependencies": {
-    "@types/node": "^22.14.0",
-    "@vitejs/plugin-react": "^5.0.0",
-    "typescript": "~5.8.2",
-    "vite": "^6.2.0"
+    // ... reste du code ...
   }
 }
