@@ -13,7 +13,12 @@
     "react-dom": "^19.2.0",
     "lucide-react": "^0.554.0",
     "framer-motion": "^12.23.24",
-    "three": "^0.160.0" 
+    "three": "^0.160.0",
+    
+    // NOUVELLES DÉPENDANCES POUR LA TRADUCTION
+    "i18next": "^23.11.5",
+    "react-i18next": "^14.1.2",
+    "i18next-browser-languagedetector": "^7.2.1"
   },
   "devDependencies": {
     "@types/node": "^22.14.0",
