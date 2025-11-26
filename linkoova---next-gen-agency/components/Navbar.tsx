@@ -1,8 +1,11 @@
-
 import React, { useState, useEffect } from 'react';
+// Assurez-vous que Globe est importé
 import { Menu, X, Globe, Sparkles, MessageSquare } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { NavProps } from '../types';
+
+// Importez le composant de sélecteur de langue
+import { LanguageSwitcher } from './LanguageSwitcher'; 
 
 const Navbar: React.FC<NavProps> = ({ currentPage, onNavigate }) => {
   const [isScrolled, setIsScrolled] = useState(false);
@@ -112,6 +115,7 @@ const Navbar: React.FC<NavProps> = ({ currentPage, onNavigate }) => {
           <button
             onClick={() => {
                 onNavigate('company');
+                // Note : Vous devrez ajuster la logique si 'contact' n'est pas sur 'company'
                 setTimeout(() => {
                     document.getElementById('contact')?.scrollIntoView({ behavior: 'smooth' });
                 }, 100);
@@ -124,7 +128,14 @@ const Navbar: React.FC<NavProps> = ({ currentPage, onNavigate }) => {
 
         {/* CTA & Mobile Toggle */}
         <div className="flex items-center gap-6">
-          {/* Global Access - Subtle Tech Style */}
+          
+          {/* NOUVEAU : SÉLECTEUR DE LANGUE (Desktop) */}
+          <div className="hidden xl:flex items-center text-[10px] font-medium text-gray-400 uppercase tracking-widest border border-white/10 rounded-full px-3 py-1.5 bg-white/5 hover:bg-white/10 hover:border-white/20">
+             <Globe className="w-3 h-3 mr-2" />
+             <LanguageSwitcher />
+          </div>
+
+          {/* Global Access - Subtle Tech Style (Original) */}
           <button className="hidden xl:flex items-center gap-2 text-[10px] font-medium text-gray-400 hover:text-white transition-colors uppercase tracking-widest border border-white/10 rounded-full px-3 py-1.5 bg-white/5 hover:bg-white/10 hover:border-white/20">
             <span className="relative flex h-2 w-2">
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
@@ -199,6 +210,13 @@ const Navbar: React.FC<NavProps> = ({ currentPage, onNavigate }) => {
               </button>
               
               <div className="pt-6 border-t border-white/10">
+                 
+                 {/* NOUVEAU : SÉLECTEUR DANS LE MENU MOBILE */}
+                 <div className="mb-4 flex items-center gap-2 text-xs font-medium text-gray-400 uppercase tracking-widest">
+                     <Globe className="w-3 h-3 mr-1"/> Langue: 
+                     <LanguageSwitcher /> 
+                 </div>
+
                  <button className="flex items-center gap-2 text-xs font-medium text-gray-400 uppercase tracking-widest">
                     <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
                     Global Access
