@@ -1,23 +1,90 @@
-import React, { useState, useEffect } from 'react';
-// Assurez-vous que Globe est importé
+import React, { useState, useEffect, useCallback } from 'react';
 import { Menu, X, Globe, Sparkles, MessageSquare } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { NavProps } from '../types';
+// Définitions de types pour la compilation
+type PageView = 'home' | 'pricing' | 'quote' | 'work' | 'company';
+interface NavProps {
+    currentPage: PageView;
+    onNavigate: (page: PageView, sectionId?: string) => void;
+}
 
-// ******************************
-// 1. IMPORT DU SÉLECTEUR ET DU HOOK DE TRADUCTION
-// ******************************
+// *****************************************************************
+// 🚨 CONTOURNEMENT POUR ENVIRONNEMENT MONO-FICHIER (i18n SIMULÉ) - DUPLIQUÉ
+// Cette logique est dupliquée de LanguageSwitcher.tsx pour garantir la compilation
+// sans imports externes.
+// *****************************************************************
+
+const i18nMockResources = {
+  en: {
+    "work": "Work", "insights": "Insights", "pricing": "Pricing", "company": "Company", "contact": "Contact", "get_a_quote": "Get a Quote", "global_access": "Global Access",
+    "contact_button_label": "Let's Talk", "welcome_message": "Welcome to the next generation agency.", "page_title": "Home"
+  },
+  fr: {
+    "work": "Projets", "insights": "Analyses", "pricing": "Tarification", "company": "Entreprise", "contact": "Contact", "get_a_quote": "Demander un Devis", "global_access": "Accès Global",
+    "contact_button_label": "Discutons", "welcome_message": "Bienvenue dans l'agence nouvelle génération.", "page_title": "Accueil"
+  }
+};
+
+const LANG_STORAGE_KEY = 'i18nextLng';
+
+const useTranslationMock = () => {
+  // Détecte la langue stockée ou par défaut
+  const initialLangCode = (localStorage.getItem(LANG_STORAGE_KEY) || navigator.language).substring(0, 2);
+  const initialLang = initialLangCode === 'fr' ? 'fr' : 'en';
+
+  const [lang, setLang] = useState<'fr' | 'en'>(initialLang); 
+  const [currentResources, setCurrentResources] = useState(i18nMockResources[lang]);
+
+  // Fonction de traduction
+  const t = useCallback((key: keyof typeof i18nMockResources.en): string => {
+    return currentResources[key] || i18nMockResources.en[key] || key;
+  }, [currentResources]);
+
+  // Fonction pour changer la langue (pour la cohérence, mais LanguageSwitcher gère l'appel)
+  const changeLanguage = (newLang: 'fr' | 'en') => {
+    if (newLang !== lang) {
+      setLang(newLang);
+      setCurrentResources(i18nMockResources[newLang]);
+      localStorage.setItem(LANG_STORAGE_KEY, newLang);
+    }
+  };
+
+  // EFFECT pour SYNCHRONISER: Vérifie le localStorage pour détecter les changements faits par LanguageSwitcher
+  useEffect(() => {
+    const interval = setInterval(() => {
+      const storedLang = localStorage.getItem(LANG_STORAGE_KEY);
+      if (storedLang && storedLang.substring(0, 2) !== lang) {
+        setLang(storedLang.substring(0, 2) as 'fr' | 'en');
+        setCurrentResources(i18nMockResources[storedLang.substring(0, 2) as 'fr' | 'en']);
+      }
+    }, 500); // Poll toutes les 500ms
+    return () => clearInterval(interval);
+  }, [lang]);
+
+
+  return { 
+    t, 
+    i18n: { 
+      language: lang, 
+      changeLanguage 
+    } 
+  };
+};
+
+// *****************************************************************
+// 🇫🇷 COMMENCE LE COMPOSANT NAVBAR
+// *****************************************************************
+
+// Import du LanguageSwitcher (doit être le composant complet et auto-suffisant)
 import { LanguageSwitcher } from './LanguageSwitcher'; 
-import { useTranslation } from 'react-i18next'; // <-- NÉCESSAIRE POUR TRADUIRE LES LIENS
+
 
 const Navbar: React.FC<NavProps> = ({ currentPage, onNavigate }) => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   
-  // ******************************
-  // 2. INITIALISATION DU HOOK DE TRADUCTION
-  // ******************************
-  const { t } = useTranslation(); 
+  // Utilisation du hook SIMULÉ pour la traduction
+  const { t } = useTranslationMock(); 
 
   useEffect(() => {
     const handleScroll = () => {
@@ -44,10 +111,10 @@ const Navbar: React.FC<NavProps> = ({ currentPage, onNavigate }) => {
       }`}
     >
       <div className="container mx-auto px-6 flex items-center justify-between">
-        {/* Logo - Concept (Inchangé) */}
+        {/* Logo - Concept */}
         <button onClick={() => onNavigate('home')} className="flex items-center gap-0.5 group">
             <span className="text-xl md:text-2xl font-serif font-bold tracking-widest text-white">LINK</span>
-            {/* ... Binocular Symbol ... */}
+            {/* ... Symbole Binoculaire ... */}
             <div className="flex items-center mx-1 relative">
                 {/* Left Barrel */}
                 <div className="w-7 h-7 rounded-full border-[2.5px] border-gray-600 bg-[#0a0a0a] relative flex items-center justify-center shadow-inner">
@@ -85,14 +152,14 @@ const Navbar: React.FC<NavProps> = ({ currentPage, onNavigate }) => {
               currentPage === 'work' ? 'text-[#D1A954]' : 'text-gray-400 hover:text-[#D1A954]'
             }`}
           >
-            {t('work')} {/* TRADUCTION APPLIQUÉE */}
+            {t('work')} {/* Traduction appliquée */}
           </button>
 
           <button
             onClick={() => handleNavClick('why-us')}
             className="text-xs lg:text-sm font-medium text-gray-400 hover:text-[#D1A954] transition-colors tracking-widest uppercase"
           >
-            {t('insights')} {/* TRADUCTION APPLIQUÉE */}
+            {t('insights')} {/* Traduction appliquée */}
           </button>
           
           {/* Pricing Link */}
@@ -102,7 +169,7 @@ const Navbar: React.FC<NavProps> = ({ currentPage, onNavigate }) => {
               currentPage === 'pricing' ? 'text-[#D1A954]' : 'text-gray-400 hover:text-[#D1A954]'
             }`}
           >
-            {t('pricing')} {/* TRADUCTION APPLIQUÉE */}
+            {t('pricing')} {/* Traduction appliquée */}
             {currentPage !== 'pricing' && <span className="w-1 h-1 rounded-full bg-[#D1A954]" />}
           </button>
 
@@ -112,21 +179,20 @@ const Navbar: React.FC<NavProps> = ({ currentPage, onNavigate }) => {
               currentPage === 'company' ? 'text-[#D1A954]' : 'text-gray-400 hover:text-[#D1A954]'
             }`}
           >
-            {t('company')} {/* TRADUCTION APPLIQUÉE */}
+            {t('company')} {/* Traduction appliquée */}
           </button>
 
           {/* Contact Link */}
           <button
             onClick={() => {
                 onNavigate('company');
-                // Note : Vous devrez ajuster la logique si 'contact' n'est pas sur 'company'
                 setTimeout(() => {
                     document.getElementById('contact')?.scrollIntoView({ behavior: 'smooth' });
                 }, 100);
             }}
             className="text-xs lg:text-sm font-medium text-gray-400 hover:text-[#D1A954] transition-colors tracking-widest uppercase"
           >
-            {t('contact')} {/* TRADUCTION APPLIQUÉE */}
+            {t('contact')} {/* Traduction appliquée */}
           </button>
         </div>
 
@@ -134,8 +200,7 @@ const Navbar: React.FC<NavProps> = ({ currentPage, onNavigate }) => {
         <div className="flex items-center gap-6">
           
           {/* ******************************
-              3. SÉLECTEUR DE LANGUE (Desktop - Affichage XL)
-              Nous retirons la div inutile pour ne garder que le composant.
+              SÉLECTEUR DE LANGUE (Desktop - Affichage XL)
               ****************************** */}
           <div className="hidden xl:flex items-center">
              <LanguageSwitcher />
@@ -147,7 +212,7 @@ const Navbar: React.FC<NavProps> = ({ currentPage, onNavigate }) => {
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
               <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
             </span>
-            {t('global_access')} {/* TRADUCTION APPLIQUÉE */}
+            {t('global_access')} {/* Traduction appliquée */}
           </button>
 
           {/* Get a Quote Button */}
@@ -159,7 +224,7 @@ const Navbar: React.FC<NavProps> = ({ currentPage, onNavigate }) => {
                 : 'border border-[#D1A954] text-[#D1A954] hover:bg-[#D1A954] hover:text-black'
             }`}
           >
-            {t('get_a_quote')} {/* TRADUCTION APPLIQUÉE */}
+            {t('get_a_quote')} {/* Traduction appliquée */}
           </button>
           
           <button
@@ -218,7 +283,7 @@ const Navbar: React.FC<NavProps> = ({ currentPage, onNavigate }) => {
               <div className="pt-6 border-t border-white/10">
                  
                  {/* ******************************
-                     4. SÉLECTEUR DANS LE MENU MOBILE
+                     SÉLECTEUR DANS LE MENU MOBILE
                      ****************************** */}
                  <div className="mb-4 flex items-center gap-4 text-xs font-medium text-gray-400 uppercase tracking-widest">
                      <Globe className="w-4 h-4"/> 
