@@ -1,29 +1,29 @@
-// src/components/LanguageSwitcher.tsx
-
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 
-// Définition des options de langue et des chemins d'accès aux drapeaux
+// 1. IMPORT DES FICHIERS SVG AVEC ?react
+// C'est nécessaire dans la plupart des configs Vite/React pour que le SVG soit un composant
+import FlagFR from '../assets/fr.svg?react'; 
+import FlagEN from '../assets/en.svg?react'; 
+
+// Définition des options de langue
 const languages = [
-  { code: 'fr', label: 'Français', flag: '/assets/flags/fr.svg' },
-  { code: 'en', label: 'English', flag: '/assets/flags/en.svg' },
+  { code: 'fr', label: 'Français', flag: FlagFR },
+  { code: 'en', label: 'English', flag: FlagEN },
 ];
 
 export const LanguageSwitcher: React.FC = () => {
-  // Récupère l'objet i18n qui contient la fonction changeLanguage et la langue actuelle
   const { i18n } = useTranslation(); 
   
-  // Fonction pour changer la langue
   const changeLanguage = (code: string) => {
     i18n.changeLanguage(code);
   };
   
-  // Détermine la langue active
   const currentLangCode = i18n.language; 
 
   return (
     <div className="flex items-center space-x-2">
-      {languages.map(({ code, flag }) => (
+      {languages.map(({ code, flag: FlagComponent }) => ( // Renommer 'flag' en 'FlagComponent' pour le JSX
         <button
           key={code}
           onClick={() => changeLanguage(code)}
@@ -33,11 +33,8 @@ export const LanguageSwitcher: React.FC = () => {
           `}
           aria-label={`Changer la langue en ${code.toUpperCase()}`}
         >
-          <img 
-            src={flag} 
-            alt={code.toUpperCase()} 
-            className="w-6 h-6 object-cover rounded-full" 
-          />
+          {/* UTILISATION DU COMPOSANT SVG */}
+          <FlagComponent className="w-6 h-6 object-cover rounded-full" /> 
         </button>
       ))}
     </div>
