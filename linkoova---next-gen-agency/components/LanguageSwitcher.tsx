@@ -1,15 +1,13 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 
-// 1. IMPORT DES FICHIERS SVG AVEC ?react
-// C'est nécessaire dans la plupart des configs Vite/React pour que le SVG soit un composant
-import FlagFR from '../assets/fr.svg?react'; 
-import FlagEN from '../assets/en.svg?react'; 
+// Nous utilisons le texte FR/EN pour garantir la compatibilité
+// Les imports SVG sont retirés.
 
 // Définition des options de langue
 const languages = [
-  { code: 'fr', label: 'Français', flag: FlagFR },
-  { code: 'en', label: 'English', flag: FlagEN },
+  { code: 'fr', label: 'Français' },
+  { code: 'en', label: 'English' },
 ];
 
 export const LanguageSwitcher: React.FC = () => {
@@ -19,22 +17,26 @@ export const LanguageSwitcher: React.FC = () => {
     i18n.changeLanguage(code);
   };
   
+  // La langue actuelle, utilisée pour styliser le bouton actif
   const currentLangCode = i18n.language; 
 
   return (
     <div className="flex items-center space-x-2">
-      {languages.map(({ code, flag: FlagComponent }) => ( // Renommer 'flag' en 'FlagComponent' pour le JSX
+      {languages.map(({ code }) => ( 
         <button
           key={code}
           onClick={() => changeLanguage(code)}
           className={`
-            transition-opacity duration-200 p-1 rounded-full 
-            ${currentLangCode === code ? 'opacity-100 ring-2 ring-[#D1A954]' : 'opacity-60 hover:opacity-100'}
+            transition-all duration-200 py-1 px-2 text-xs font-bold uppercase rounded-md border 
+            ${currentLangCode === code 
+              ? 'border-[#D1A954] text-[#D1A954] bg-[#D1A954]/10' 
+              : 'border-white/20 text-gray-400 hover:text-white hover:border-white/40'
+            }
           `}
           aria-label={`Changer la langue en ${code.toUpperCase()}`}
         >
-          {/* UTILISATION DU COMPOSANT SVG */}
-          <FlagComponent className="w-6 h-6 object-cover rounded-full" /> 
+          {/* AFFICHAGE DU CODE DE LA LANGUE (FR ou EN) */}
+          {code.toUpperCase()} 
         </button>
       ))}
     </div>
