@@ -4,12 +4,20 @@ import { Menu, X, Globe, Sparkles, MessageSquare } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { NavProps } from '../types';
 
-// Importez le composant de sélecteur de langue
+// ******************************
+// 1. IMPORT DU SÉLECTEUR ET DU HOOK DE TRADUCTION
+// ******************************
 import { LanguageSwitcher } from './LanguageSwitcher'; 
+import { useTranslation } from 'react-i18next'; // <-- NÉCESSAIRE POUR TRADUIRE LES LIENS
 
 const Navbar: React.FC<NavProps> = ({ currentPage, onNavigate }) => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  
+  // ******************************
+  // 2. INITIALISATION DU HOOK DE TRADUCTION
+  // ******************************
+  const { t } = useTranslation(); 
 
   useEffect(() => {
     const handleScroll = () => {
@@ -36,11 +44,10 @@ const Navbar: React.FC<NavProps> = ({ currentPage, onNavigate }) => {
       }`}
     >
       <div className="container mx-auto px-6 flex items-center justify-between">
-        {/* Logo - High Tech Binocular Concept (Navbar Scale) */}
+        {/* Logo - Concept (Inchangé) */}
         <button onClick={() => onNavigate('home')} className="flex items-center gap-0.5 group">
             <span className="text-xl md:text-2xl font-serif font-bold tracking-widest text-white">LINK</span>
-            
-            {/* Binocular Symbol */}
+            {/* ... Binocular Symbol ... */}
             <div className="flex items-center mx-1 relative">
                 {/* Left Barrel */}
                 <div className="w-7 h-7 rounded-full border-[2.5px] border-gray-600 bg-[#0a0a0a] relative flex items-center justify-center shadow-inner">
@@ -48,7 +55,6 @@ const Navbar: React.FC<NavProps> = ({ currentPage, onNavigate }) => {
                     <div className="w-2.5 h-2.5 rounded-full bg-black border border-[#D1A954]/30 shadow-[0_0_5px_rgba(255,255,255,0.1)]"></div>
                     <div className="absolute top-1 right-1.5 w-1 h-1 bg-white/70 rounded-full blur-[0.5px]"></div>
                 </div>
-                
                 {/* Mechanical Bridge */}
                 <div className="flex flex-col items-center justify-center -mx-0.5 z-10">
                      <div className="w-3 h-[2px] bg-gray-500 rounded-sm mb-[1px]"></div>
@@ -60,7 +66,6 @@ const Navbar: React.FC<NavProps> = ({ currentPage, onNavigate }) => {
                      </div>
                      <div className="w-3 h-[2px] bg-gray-500 rounded-sm mt-[1px]"></div>
                 </div>
-                
                 {/* Right Barrel */}
                 <div className="w-7 h-7 rounded-full border-[2.5px] border-gray-600 bg-[#0a0a0a] relative flex items-center justify-center shadow-inner">
                     <div className="absolute inset-0 bg-gradient-to-tl from-indigo-900/60 via-transparent to-emerald-900/40 opacity-80 rounded-full"></div>
@@ -68,11 +73,10 @@ const Navbar: React.FC<NavProps> = ({ currentPage, onNavigate }) => {
                     <div className="absolute top-1 left-1.5 w-1 h-1 bg-white/70 rounded-full blur-[0.5px]"></div>
                 </div>
             </div>
-
             <span className="text-xl md:text-2xl font-serif font-bold tracking-widest text-white">VA</span>
         </button>
 
-        {/* Desktop Links */}
+        {/* Desktop Links (Main Navigation) */}
         <div className="hidden md:flex items-center gap-8 lg:gap-10">
           
           <button
@@ -81,14 +85,14 @@ const Navbar: React.FC<NavProps> = ({ currentPage, onNavigate }) => {
               currentPage === 'work' ? 'text-[#D1A954]' : 'text-gray-400 hover:text-[#D1A954]'
             }`}
           >
-            Work
+            {t('work')} {/* TRADUCTION APPLIQUÉE */}
           </button>
 
           <button
             onClick={() => handleNavClick('why-us')}
             className="text-xs lg:text-sm font-medium text-gray-400 hover:text-[#D1A954] transition-colors tracking-widest uppercase"
           >
-            Insights
+            {t('insights')} {/* TRADUCTION APPLIQUÉE */}
           </button>
           
           {/* Pricing Link */}
@@ -98,7 +102,7 @@ const Navbar: React.FC<NavProps> = ({ currentPage, onNavigate }) => {
               currentPage === 'pricing' ? 'text-[#D1A954]' : 'text-gray-400 hover:text-[#D1A954]'
             }`}
           >
-            Pricing
+            {t('pricing')} {/* TRADUCTION APPLIQUÉE */}
             {currentPage !== 'pricing' && <span className="w-1 h-1 rounded-full bg-[#D1A954]" />}
           </button>
 
@@ -108,7 +112,7 @@ const Navbar: React.FC<NavProps> = ({ currentPage, onNavigate }) => {
               currentPage === 'company' ? 'text-[#D1A954]' : 'text-gray-400 hover:text-[#D1A954]'
             }`}
           >
-            Company
+            {t('company')} {/* TRADUCTION APPLIQUÉE */}
           </button>
 
           {/* Contact Link */}
@@ -122,16 +126,18 @@ const Navbar: React.FC<NavProps> = ({ currentPage, onNavigate }) => {
             }}
             className="text-xs lg:text-sm font-medium text-gray-400 hover:text-[#D1A954] transition-colors tracking-widest uppercase"
           >
-            Contact
+            {t('contact')} {/* TRADUCTION APPLIQUÉE */}
           </button>
         </div>
 
         {/* CTA & Mobile Toggle */}
         <div className="flex items-center gap-6">
           
-          {/* NOUVEAU : SÉLECTEUR DE LANGUE (Desktop) */}
-          <div className="hidden xl:flex items-center text-[10px] font-medium text-gray-400 uppercase tracking-widest border border-white/10 rounded-full px-3 py-1.5 bg-white/5 hover:bg-white/10 hover:border-white/20">
-             <Globe className="w-3 h-3 mr-2" />
+          {/* ******************************
+              3. SÉLECTEUR DE LANGUE (Desktop - Affichage XL)
+              Nous retirons la div inutile pour ne garder que le composant.
+              ****************************** */}
+          <div className="hidden xl:flex items-center">
              <LanguageSwitcher />
           </div>
 
@@ -141,7 +147,7 @@ const Navbar: React.FC<NavProps> = ({ currentPage, onNavigate }) => {
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
               <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
             </span>
-            Global Access
+            {t('global_access')} {/* TRADUCTION APPLIQUÉE */}
           </button>
 
           {/* Get a Quote Button */}
@@ -153,7 +159,7 @@ const Navbar: React.FC<NavProps> = ({ currentPage, onNavigate }) => {
                 : 'border border-[#D1A954] text-[#D1A954] hover:bg-[#D1A954] hover:text-black'
             }`}
           >
-            Get a Quote
+            {t('get_a_quote')} {/* TRADUCTION APPLIQUÉE */}
           </button>
           
           <button
@@ -175,17 +181,17 @@ const Navbar: React.FC<NavProps> = ({ currentPage, onNavigate }) => {
             className="md:hidden bg-[#0B0B0C] border-b border-white/10 overflow-hidden"
           >
             <div className="flex flex-col p-6 gap-6">
-              <button onClick={() => handlePageNav('work')} className="text-2xl font-serif text-gray-300 hover:text-[#D1A954] text-left">Work</button>
-              <button onClick={() => handleNavClick('why-us')} className="text-2xl font-serif text-gray-300 hover:text-[#D1A954] text-left">Insights</button>
+              <button onClick={() => handlePageNav('work')} className="text-2xl font-serif text-gray-300 hover:text-[#D1A954] text-left">{t('work')}</button>
+              <button onClick={() => handleNavClick('why-us')} className="text-2xl font-serif text-gray-300 hover:text-[#D1A954] text-left">{t('insights')}</button>
               
               <button
                  onClick={() => handlePageNav('pricing')}
                  className="text-xl font-serif text-white hover:text-[#D1A954] text-left flex items-center gap-2"
               >
-                  Pricing & Plans <Sparkles className="w-4 h-4" />
+                  {t('pricing')} & Plans <Sparkles className="w-4 h-4" />
               </button>
 
-              <button onClick={() => handlePageNav('company')} className="text-2xl font-serif text-gray-300 hover:text-[#D1A954] text-left">Company</button>
+              <button onClick={() => handlePageNav('company')} className="text-2xl font-serif text-gray-300 hover:text-[#D1A954] text-left">{t('company')}</button>
 
                <button
                   onClick={() => {
@@ -197,7 +203,7 @@ const Navbar: React.FC<NavProps> = ({ currentPage, onNavigate }) => {
                   }}
                   className="text-2xl font-serif text-gray-300 hover:text-[#D1A954] text-left"
                 >
-                  Contact
+                  {t('contact')}
                 </button>
                 
               <div className="h-px bg-white/10 w-full my-2"></div>
@@ -206,20 +212,22 @@ const Navbar: React.FC<NavProps> = ({ currentPage, onNavigate }) => {
                  onClick={() => handlePageNav('quote')}
                  className="text-xl font-serif text-[#D1A954] text-left flex items-center gap-2"
               >
-                  Get a Quote <MessageSquare className="w-4 h-4" />
+                  {t('get_a_quote')} <MessageSquare className="w-4 h-4" />
               </button>
               
               <div className="pt-6 border-t border-white/10">
                  
-                 {/* NOUVEAU : SÉLECTEUR DANS LE MENU MOBILE */}
-                 <div className="mb-4 flex items-center gap-2 text-xs font-medium text-gray-400 uppercase tracking-widest">
-                     <Globe className="w-3 h-3 mr-1"/> Langue: 
+                 {/* ******************************
+                     4. SÉLECTEUR DANS LE MENU MOBILE
+                     ****************************** */}
+                 <div className="mb-4 flex items-center gap-4 text-xs font-medium text-gray-400 uppercase tracking-widest">
+                     <Globe className="w-4 h-4"/> 
                      <LanguageSwitcher /> 
                  </div>
 
                  <button className="flex items-center gap-2 text-xs font-medium text-gray-400 uppercase tracking-widest">
                     <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
-                    Global Access
+                    {t('global_access')}
                  </button>
               </div>
             </div>
