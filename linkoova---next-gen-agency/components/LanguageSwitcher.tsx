@@ -1,11 +1,13 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { Globe } from 'lucide-react';
 
 // =================================================================
 // 🚨 CONTOURNEMENT POUR ENVIRONNEMENT MONO-FICHIER (i18n SIMULÉ)
+// Ce hook permet au composant d'être autonome pour le changement de langue
+// et de se synchroniser avec App.tsx via localStorage.
 // =================================================================
 
-// 1. Définition des ressources de traduction (doit correspondre à i18n.ts)
-// Normalement ceci viendrait d'un fichier externe, mais est inclus ici pour l'auto-compilation.
+// 1. Définition des ressources de traduction (doit correspondre à App.tsx)
 const i18nMockResources = {
   en: {
     work: "Work", insights: "Insights", pricing: "Pricing", company: "Company", contact: "Contact", "get_a_quote": "Get a Quote", "global_access": "Global Access",
@@ -18,7 +20,7 @@ const i18nMockResources = {
 // 2. Clé de stockage local pour persister la langue
 const LANG_STORAGE_KEY = 'i18nextLng';
 
-// 3. Détecter et gérer l'état local de la langue
+// 3. Détecter et gérer l'état local de la langue (Hook de traduction complet)
 const useTranslationMock = () => {
   // Détecte la langue du navigateur ou utilise celle stockée, par défaut 'en'
   const initialLang = localStorage.getItem(LANG_STORAGE_KEY) || navigator.language.substring(0, 2) || 'en';
@@ -35,10 +37,31 @@ const useTranslationMock = () => {
     if (newLang !== lang) {
       setLang(newLang);
       setCurrentResources(i18nMockResources[newLang]);
+      // Écrit dans localStorage, ce qui déclenchera la mise à jour dans App.tsx et Navbar.tsx
       localStorage.setItem(LANG_STORAGE_KEY, newLang);
-      // Force les autres composants qui utilisent ce mock à se mettre à jour (via React state)
     }
   };
+    
+  // Synchronisation avec les changements externes (polling pour les autres composants)
+  useEffect(() => {
+    const handleStorageChange = () => {
+        const storedLangCode = (localStorage.getItem(LANG_STORAGE_KEY) || 'en').substring(0, 2);
+        const newLang = storedLangCode === 'fr' ? 'fr' : 'en';
+        if (newLang !== lang) {
+            setLang(newLang);
+            setCurrentResources(i18nMockResources[newLang]);
+        }
+    };
+    
+    // Assure que la langue initiale est bien définie dans localStorage
+    localStorage.setItem(LANG_STORAGE_KEY, lang);
+    
+    // Polling pour la synchronisation
+    const interval = setInterval(handleStorageChange, 500); 
+
+    return () => clearInterval(interval);
+  }, [lang]);
+
 
   return { 
     t, 
@@ -59,30 +82,29 @@ const languages = [
   { code: 'en', label: 'English' },
 ];
 
-export const LanguageSwitcher: React.FC = () => {
+const LanguageSwitcher: React.FC = () => {
   // Utilisation du hook SIMULÉ
   const { i18n } = useTranslationMock(); 
   
-  const changeLanguage = (code: string) => {
-    // Le code n'a pas besoin de vérifier la dépendance externe, car il appelle la fonction locale
+  const handleLanguageChange = (code: string) => {
+    // Appel à la fonction de changement de langue du mock
     i18n.changeLanguage(code as 'fr' | 'en');
   };
   
   // La langue actuelle, utilisée pour styliser le bouton actif
-  // On utilise substring(0, 2) pour s'assurer que 'fr-FR' ou 'en-US' est bien comparé à 'fr' ou 'en'
   const currentLangCode = i18n.language.substring(0, 2); 
 
   return (
-    <div className="flex items-center space-x-2">
+    <div className="flex items-center gap-1.5 p-1 bg-white/5 rounded-full border border-white/10 text-xs font-medium uppercase tracking-widest">
       {languages.map(({ code }) => ( 
         <button
           key={code}
-          onClick={() => changeLanguage(code)}
+          onClick={() => handleLanguageChange(code)}
           className={`
-            transition-all duration-200 py-1 px-2 text-xs font-bold uppercase rounded-md border 
+            transition-all duration-200 px-3 py-1 rounded-full 
             ${currentLangCode === code 
-              ? 'border-[#D1A954] text-[#D1A954] bg-[#D1A954]/10' 
-              : 'border-white/20 text-gray-400 hover:text-white hover:border-white/40'
+              ? 'bg-[#D1A954] text-black shadow-lg' 
+              : 'text-gray-400 hover:text-white'
             }
           `}
           aria-label={`Changer la langue en ${code.toUpperCase()}`}
@@ -94,3 +116,5 @@ export const LanguageSwitcher: React.FC = () => {
     </div>
   );
 };
+
+export default LanguageSwitcher;
