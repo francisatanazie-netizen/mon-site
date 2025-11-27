@@ -53,7 +53,10 @@ const Contact: React.FC = () => {
             setFormState({ name: '', email: '', company: '', budget: '', message: '' }); 
         } else {
             setStatus('error');
-            setMessage("Une erreur s'est produite lors de l'envoi. Veuillez réessayer.");
+            // Affichage de l'erreur brute si possible pour le débogage, sinon message générique
+            const errorText = await response.text();
+            console.error('Netlify Form Error Details:', errorText);
+            setMessage("Une erreur s'est produite lors de l'envoi. Veuillez réessayer. (Code: " + response.status + ")");
         }
     } catch (error) {
         console.error('Submission error:', error);
@@ -94,6 +97,7 @@ const Contact: React.FC = () => {
             className="space-y-6"
           >
             {/* CHAMPS CACHÉS OBLIGATOIRES POUR NETLIFY */}
+            {/* Ce champ est crucial pour le fetch asynchrone */}
             <input type="hidden" name="form-name" value="contact-form" />
             
             <div className="grid grid-cols-2 gap-6">
@@ -185,6 +189,23 @@ const Contact: React.FC = () => {
               {status === 'submitting' ? 'Sending...' : 'Launch Transformation'}
             </button>
           </motion.form>
+
+          {/* Ajout du FORMULAIRE CACHÉ pour la détection statique par Netlify.
+            Ceci corrige l'erreur 400/500 lorsque le site est déployé.
+            Il doit contenir les mêmes attributs 'name' et le 'form-name'.
+          */}
+          <form name="contact-form" netlify hidden>
+            <input type="text" name="name" />
+            <input type="email" name="email" />
+            <input type="text" name="company" />
+            <select name="budget">
+              <option value=""></option>
+              <option value="10k-50k"></option>
+              <option value="50k-100k"></option>
+              <option value="100k+"></option>
+            </select>
+            <textarea name="message"></textarea>
+          </form>
 
         </div>
       </div>
