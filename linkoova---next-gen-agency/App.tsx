@@ -13,146 +13,113 @@ import Quote from './components/Quote';
 import Work from './components/Work';
 import Company from './components/Company';
 import CustomCursor from './components/CustomCursor';
-import GlobalBackground from './components/GlobalBackground'; 
-import { ArrowUp } from 'lucide-react';
+import GlobalBackground from './components/GlobalBackground';
+// Définition du type PageView basée sur le JSX
+type PageView = 'home' | 'pricing' | 'quote' | 'work' | 'company';
 
-// Définition du type d'état pour la navigation
-type PageView = '/' | '/work' | '/pricing' | '/quote' | '/company';
+// ----------------------------------------------------------------------
+// MAPPING ET LOGIQUE DE ROUTAGE
+// ----------------------------------------------------------------------
 
-// NOUVEAU COMPOSANT : Regroupe le contenu de la Home Page
-const HomePageContent: React.FC = () => (
-    <>
-        <Hero />
-        <About />
-        <Services />
-        <Portfolio /> 
-        <WhyUs />
-        <Testimonials />
-        <Contact id="contact" />
-    </>
-);
+const pageToPathMap: Record<PageView, string> = {
+  'home': '/',
+  'pricing': '/pricing',
+  'quote': '/quote',
+  'work': '/work',
+  'company': '/company',
+};
 
+// Fonction utilitaire pour inverser le mapping (Path -> PageView)
+const pathToPageMap: Record<string, PageView> = Object.entries(pageToPathMap).reduce((acc, [key, value]) => {
+  acc[value] = key as PageView;
+  return acc;
+}, {} as Record<string, PageView>);
+
+
+// Fonction pour obtenir l'état PageView à partir de l'URL du navigateur
+const getPageFromPath = (path: string): PageView => {
+    // Normaliser le chemin (enlever le slash de fin si présent, sauf pour '/')
+    const normalizedPath = path.endsWith('/') && path.length > 1
+        ? path.slice(0, -1)
+        : path;
+        
+    // Retourne la PageView correspondante, sinon retourne 'home' par défaut
+    return pathToPageMap[normalizedPath] || 'home';
+};
 
 function App() {
-    // Rétablissement de l'état local pour la navigation
-    const [currentPage, setCurrentPage] = useState<PageView>('/'); 
-    const [showScrollToTop, setShowScrollToTop] = useState(false);
+  // Initialise l'état à partir du chemin de l'URL (si non trouvé, utilise 'home')
+  const [currentPage, setCurrentPage] = useState<PageView>(getPageFromPath(window.location.pathname));
 
-    // Fonction de navigation qui met à jour l'état
-    const handleNavigate = (page: PageView) => {
-        setCurrentPage(page);
-    };
+  // Reset scroll on page change
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'instant' });
+  }, [currentPage]);
 
-    // Logique pour déterminer si on affiche le fond dynamique
-    const shouldShowGlobalBackground = currentPage !== '/work';
+  const handleNavigate = (page: PageView, sectionId?: string) => {
+    const targetPath = pageToPathMap[page];
 
-    // Reset scroll sur le changement de page
-    useEffect(() => {
-        window.scrollTo({ top: 0, behavior: 'instant' });
-    }, [currentPage]);
+    // 1. Mise à jour de l'URL du navigateur (pushState)
+    if (targetPath && targetPath !== window.location.pathname) {
+      // Utilisez null comme premier argument (state object) pour plus de propreté
+      window.history.pushState(null, '', targetPath); 
+    }
     
-    // Gère l'événement de scroll pour afficher/masquer le bouton
-    useEffect(() => {
-        const handleScroll = () => {
-            if (window.scrollY > 300) {
-                setShowScrollToTop(true);
-            } else {
-                setShowScrollToTop(false);
-            }
-        };
-
-        window.addEventListener('scroll', handleScroll);
-        return () => window.removeEventListener('scroll', handleScroll);
-    }, []);
+    // 2. Mise à jour de l'état React pour le rendu
+    setCurrentPage(page);
     
-    // Remonte la page en haut
-    const scrollToTop = () => {
-        window.scrollTo({
-            top: 0,
-            behavior: 'smooth'
-        });
-    };
-
-    // Logique pour l'ancre #contact (maintenue si sur la page d'accueil)
-    useEffect(() => {
-        // Cette logique est plus compliquée sans React Router, on la simplifie
-        // En mode navigation par état, on ne supporte pas le deep linking d'ancre facilement.
-        // On se concentre sur la vue principale.
-    }, [currentPage]); 
-
-    // Logique de rendu en fonction de la currentPage
-    const renderContent = () => {
-        switch (currentPage) {
-            case '/':
-                return <HomePageContent />;
-            case '/pricing':
-                return <Pricing />;
-            case '/quote':
-                return <Quote />;
-            case '/work':
-                return <Work />;
-            case '/company':
-                return <Company />;
-            default:
-                return <HomePageContent />;
+    // Logique de défilement (Scroll) pour la page 'home'
+    if (page === 'home' && sectionId) {
+      setTimeout(() => {
+        const element = document.getElementById(sectionId);
+        if (element) {
+          element.scrollIntoView({ behavior: 'smooth' });
         }
+      }, 100);
+    }
+  };
+
+  // useEffect : Gère les boutons Précédent/Suivant du navigateur
+  useEffect(() => {
+    const handlePopState = () => {
+      // Met à jour l'état de la page lorsque l'URL change via l'historique du navigateur
+      setCurrentPage(getPageFromPath(window.location.pathname));
     };
 
+    window.addEventListener('popstate', handlePopState);
+    return () => {
+      window.removeEventListener('popstate', handlePopState);
+    };
+  }, []); 
 
-    return (
-        // GARANTIE DE FOND NOIR : La div principale a un fond solide
-        <div className="min-h-screen text-white selection:bg-[#D1A954] selection:text-black cursor-none relative font-sans antialiased bg-[#0B0B0C]">
-            
-            {/* Rendu conditionnel du GlobalBackground */}
-            {shouldShowGlobalBackground && <GlobalBackground />}
-            
-            <CustomCursor />
-            {/* Transmission de la fonction de navigation à la Navbar */}
-            <Navbar onNavigate={handleNavigate} currentPage={currentPage} /> 
-            
-            <main className="relative z-10">
-                {/* Rendu du contenu en fonction de la page actuelle */}
-                {renderContent()}
-            </main>
-            
-            <Footer />
-            
-            {/* 1. Bouton Flottant "Contact" / "Let's Go" (Affiché uniquement sur la Home Page) */}
-            {currentPage === '/' && (<button 
-                    // Au clic, navigue vers la page d'accueil puis scroll vers le bas
-                    onClick={() => {
-                        handleNavigate('/');
-                        setTimeout(() => {
-                           const element = document.getElementById('contact');
-                            if (element) {
-                                element.scrollIntoView({ behavior: 'smooth' });
-                            } 
-                        }, 100);
-                    }}
-                    className="fixed bottom-6 left-6 z-40 px-6 py-3 bg-[#D1A954] text-black font-bold uppercase tracking-wider rounded-full shadow-2xl transition-all duration-300 hover:bg-[#E0B96A] transform hover:scale-105 text-sm md:text-base"
-                    aria-label="Contactez-nous pour un projet"
-                >
-                    Let's Go!
-                </button>
-            )}
-
-            {/* 2. Bouton Flottant "Remonter en haut de page" (Affiché uniquement sur le chemin /) */}
-            <button
-                onClick={scrollToTop}
-                // Visible uniquement sur la page d'accueil ET si l'utilisateur a scrollé
-                className={`
-                    fixed bottom-6 right-6 z-40 p-3 rounded-full 
-                    bg-white/10 text-white border border-white/20 
-                    shadow-xl transition-opacity duration-300 
-                    hover:bg-white/20
-                    ${showScrollToTop && currentPage === '/' ? 'opacity-100 visible' : 'opacity-0 invisible'}
-                `}
-                aria-label="Remonter en haut de page"
-            >
-                <ArrowUp className="w-6 h-6" /> 
-            </button>
-        </div>
-    );
+  return (
+    <div className="min-h-screen text-white selection:bg-[#D1A954] selection:text-black cursor-none relative">
+      <GlobalBackground />
+      <CustomCursor />
+      {/* Passez la prop onNavigate pour que la Navbar puisse changer la page */}
+      <Navbar currentPage={currentPage} onNavigate={handleNavigate} /> 
+      
+      <main className="relative z-10">
+        {currentPage === 'home' && (
+          <>
+            <Hero />
+            <About />
+            <Services />
+            <Portfolio onNavigate={handleNavigate} />
+            <WhyUs />
+            <Testimonials />
+            <Contact />
+          </>
+        )}
+        {currentPage === 'pricing' && <Pricing />}
+        {currentPage === 'quote' && <Quote />}
+        {currentPage === 'work' && <Work />}
+        {currentPage === 'company' && <Company />}
+      </main>
+      
+      <Footer />
+    </div>
+  );
 }
 
 export default App;
