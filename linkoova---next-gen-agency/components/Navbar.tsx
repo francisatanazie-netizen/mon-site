@@ -1,11 +1,18 @@
 import React, { useState, useEffect } from 'react';
 import { Menu, X, Sparkles, MessageSquare } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-// 🛑 NOUVEAUX IMPORTS : Link et useLocation pour le routage
-import { Link, useLocation } from 'react-router-dom';
+
+// Définition du type d'état pour la navigation
+type PageView = '/' | '/work' | '/pricing' | '/quote' | '/company';
+
+// Définition des props requises
+interface NavbarProps {
+    onNavigate: (page: PageView) => void;
+    currentPage: PageView;
+}
 
 // *****************************************************************
-// 🇫🇷 NAVBAR COMPONENT - VERSION STABILISÉE
+// 🇫🇷 NAVBAR COMPONENT - AVANT ROUTING
 // *****************************************************************
 
 // Définitions des textes en dur (EN)
@@ -19,18 +26,14 @@ const TEXTS = {
     global_access: "Global Access",
 };
 
-const Navbar: React.FC = () => {
+const Navbar: React.FC<NavbarProps> = ({ onNavigate, currentPage }) => {
     const [isScrolled, setIsScrolled] = useState(false);
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
     
-    // 🛑 useLocation pour déterminer le chemin actif et gérer le style
-    const location = useLocation();
-
     useEffect(() => {
         const handleScroll = () => {
-            // isScrolled est vrai si on a scrollé OU si on n'est pas sur la Home Page (path !== '/')
-            const isHomePage = location.pathname === '/';
-            // Un seuil plus bas pour le scroll pour activer le fond solide
+            // isScrolled est vrai si on a scrollé OU si on n'est pas sur la Home Page
+            const isHomePage = currentPage === '/';
             setIsScrolled(window.scrollY > 10 || !isHomePage);
         };
         
@@ -38,22 +41,12 @@ const Navbar: React.FC = () => {
         
         window.addEventListener('scroll', handleScroll);
         return () => window.removeEventListener('scroll', handleScroll);
-    }, [location.pathname]);
+    }, [currentPage]);
 
     // Fonction utilitaire pour le style des liens actifs
-    const getLinkClass = (path: string, exactMatch: boolean = true) => {
-        let isActive = false;
+    const getLinkClass = (page: PageView) => {
+        const isActive = currentPage === page;
         
-        if (path === '/') {
-            isActive = location.pathname === '/';
-        } else if (location.hash === '#contact' && path === '/#contact') {
-             isActive = true; 
-        } else if (exactMatch) {
-            isActive = location.pathname === path;
-        } else {
-            isActive = location.pathname.startsWith(path);
-        }
-
         return `
             relative transition-colors duration-200 
             ${isActive ? 'text-[#D1A954] font-semibold' : 'text-gray-400 hover:text-[#D1A954]'}
@@ -64,13 +57,14 @@ const Navbar: React.FC = () => {
     };
 
     const navItems = [
-        { name: TEXTS.work, path: '/work' },
-        { name: TEXTS.insights, path: '/#why-us' }, 
-        { name: TEXTS.pricing, path: '/pricing' },
-        { name: TEXTS.company, path: '/company' },
+        { name: TEXTS.work, page: '/work' as PageView },
+        // Insights pointait vers une ancre, on le fait pointer vers la page d'accueil pour simplifier
+        { name: TEXTS.insights, page: '/' as PageView }, 
+        { name: TEXTS.pricing, page: '/pricing' as PageView },
+        { name: TEXTS.company, page: '/company' as PageView },
     ];
 
-    // ✅ VERSION STABILISÉE: Fond noir solide au scroll, transparent/noir très léger au top.
+    // Fond noir solide au scroll, transparent/noir très léger au top.
     const navBackgroundClasses = isScrolled
         ? // État "scrollé" ou non Home Page : Fond noir solide pour une visibilité garantie
           'bg-[#0B0B0C] py-4 shadow-lg border-b border-white/5' 
@@ -79,12 +73,11 @@ const Navbar: React.FC = () => {
 
     return (
         <nav
-            // Utilisation des classes stabilisées ci-dessus.
             className={`fixed top-0 left-0 w-full z-50 transition-all duration-300 ${navBackgroundClasses}`}
         >
             <div className="container mx-auto px-6 flex items-center justify-between">
                 {/* Logo - Concept */}
-                <Link to="/" className="flex items-center gap-0.5 group">
+                <button onClick={() => onNavigate('/')} className="flex items-center gap-0.5 group">
                     <span className="text-xl md:text-2xl font-serif font-bold tracking-widest text-white hover:text-[#D1A954] transition-colors">LINK</span>
                     {/* Symbole Binoculaire */}
                      <div className="flex items-center mx-1 relative">
@@ -109,38 +102,45 @@ const Navbar: React.FC = () => {
                         </div>
                     </div>
                     <span className="text-xl md:text-2xl font-serif font-bold tracking-widest text-white hover:text-[#D1A954] transition-colors">VA</span>
-                </Link>
+                </button>
 
                 {/* Desktop Links (Main Navigation) */}
                 <div className="hidden md:flex items-center gap-8 lg:gap-10">
                     
-                    {/* UTILISATION DES COMPOSANTS <Link> */}
+                    {/* UTILISATION des <button> ou <a> qui appellent onNavigate */}
                     {navItems.map((item) => (
-                        <Link 
+                        <button 
                             key={item.name} 
-                            to={item.path}
-                            onClick={() => setIsMobileMenuOpen(false)}
+                            onClick={() => onNavigate(item.page)}
                             className={`text-xs lg:text-sm font-medium transition-colors tracking-widest uppercase flex items-center gap-2 
-                                ${getLinkClass(item.path)}
+                                ${getLinkClass(item.page)}
                             `}
                         >
                             {item.name}
-                            {item.name === TEXTS.pricing && location.pathname !== '/pricing' && (
+                            {item.name === TEXTS.pricing && currentPage !== '/pricing' && (
                                 <span className="w-1 h-1 rounded-full bg-[#D1A954]" />
                             )}
-                        </Link>
+                        </button>
                     ))}
                     
-                    {/* Contact Link (Ancre sur la Home Page) */}
-                    <Link
-                        to="/#contact"
-                        onClick={() => setIsMobileMenuOpen(false)}
+                    {/* Contact Link */}
+                    <button
+                        onClick={() => {
+                            onNavigate('/'); // Naviguer d'abord à la page d'accueil
+                            // Puis scroller vers l'ancre
+                            setTimeout(() => {
+                                const element = document.getElementById('contact');
+                                if (element) {
+                                    element.scrollIntoView({ behavior: 'smooth' });
+                                }
+                            }, 100);
+                        }}
                         className={`text-xs lg:text-sm font-medium transition-colors tracking-widest uppercase ${
-                            location.hash === '#contact' ? 'text-[#D1A954]' : 'text-gray-400 hover:text-[#D1A954]'
+                            currentPage === '/' ? 'text-[#D1A954]' : 'text-gray-400 hover:text-[#D1A954]'
                         }`}
                     >
                         {TEXTS.contact}
-                    </Link>
+                    </button>
                 </div>
 
                 {/* CTA & Mobile Toggle */}
@@ -156,16 +156,16 @@ const Navbar: React.FC = () => {
                     </button>
 
                     {/* Get a Quote Button */}
-                    <Link 
-                        to="/quote"
+                    <button 
+                        onClick={() => onNavigate('/quote')}
                         className={`hidden md:flex items-center gap-2 px-5 py-2 text-xs font-bold uppercase tracking-widest transition-all ${
-                            location.pathname === '/quote' 
+                            currentPage === '/quote' 
                             ? 'bg-[#D1A954] text-black shadow-[0_0_15px_rgba(209,169,84,0.4)]' 
                             : 'border border-[#D1A954] text-[#D1A954] hover:bg-[#D1A954] hover:text-black'
                         }`}
                     >
                         {TEXTS.get_a_quote}
-                    </Link>
+                    </button>
                     
                     <button
                         className="md:hidden text-white hover:text-[#D1A954] transition-colors"
@@ -187,37 +187,43 @@ const Navbar: React.FC = () => {
                     >
                         <div className="flex flex-col p-6 gap-6">
                             
-                            {/* Liens Mobile refactorisés avec <Link> */}
-                            <Link onClick={() => setIsMobileMenuOpen(false)} to="/work" className="text-2xl font-serif text-gray-300 hover:text-[#D1A954] text-left">{TEXTS.work}</Link>
-                            <Link onClick={() => setIsMobileMenuOpen(false)} to="/#why-us" className="text-2xl font-serif text-gray-300 hover:text-[#D1A954] text-left">{TEXTS.insights}</Link>
+                            {/* Liens Mobile refactorisés avec onClick */}
+                            <button onClick={() => { onNavigate('/work'); setIsMobileMenuOpen(false); }} className="text-2xl font-serif text-gray-300 hover:text-[#D1A954] text-left">{TEXTS.work}</button>
+                            <button onClick={() => { onNavigate('/'); setIsMobileMenuOpen(false); }} className="text-2xl font-serif text-gray-300 hover:text-[#D1A954] text-left">{TEXTS.insights}</button>
                             
-                            <Link
-                                onClick={() => setIsMobileMenuOpen(false)}
-                                to="/pricing"
+                            <button
+                                onClick={() => { onNavigate('/pricing'); setIsMobileMenuOpen(false); }}
                                 className="text-xl font-serif text-white hover:text-[#D1A954] text-left flex items-center gap-2"
                             >
                                 {TEXTS.pricing} & Plans <Sparkles className="w-4 h-4" />
-                            </Link>
+                            </button>
 
-                            <Link onClick={() => setIsMobileMenuOpen(false)} to="/company" className="text-2xl font-serif text-gray-300 hover:text-[#D1A954] text-left">{TEXTS.company}</Link>
+                            <button onClick={() => { onNavigate('/company'); setIsMobileMenuOpen(false); }} className="text-2xl font-serif text-gray-300 hover:text-[#D1A954] text-left">{TEXTS.company}</button>
 
-                            <Link
-                                onClick={() => setIsMobileMenuOpen(false)}
-                                to="/#contact" // Utilisation du chemin d'ancre
+                            <button
+                                onClick={() => { 
+                                    onNavigate('/'); 
+                                    setIsMobileMenuOpen(false); 
+                                    setTimeout(() => {
+                                        const element = document.getElementById('contact');
+                                        if (element) {
+                                            element.scrollIntoView({ behavior: 'smooth' });
+                                        }
+                                    }, 100);
+                                }}
                                 className="text-2xl font-serif text-gray-300 hover:text-[#D1A954] text-left"
                             >
                                 {TEXTS.contact}
-                            </Link>
+                            </button>
                             
                             <div className="h-px bg-white/10 w-full my-2"></div>
 
-                            <Link
-                                onClick={() => setIsMobileMenuOpen(false)}
-                                to="/quote" // Utilisation du chemin unique
+                            <button
+                                onClick={() => { onNavigate('/quote'); setIsMobileMenuOpen(false); }}
                                 className="text-xl font-serif text-[#D1A954] text-left flex items-center gap-2"
                             >
                                 {TEXTS.get_a_quote} <MessageSquare className="w-4 h-4" />
-                            </Link>
+                            </button>
                             
                             <div className="pt-6 border-t border-white/10">
                                 
