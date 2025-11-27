@@ -1,85 +1,12 @@
-import React, { useState, useEffect, useCallback, useContext } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Menu, X, Globe, Sparkles, MessageSquare } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import LanguageSwitcher from './LanguageSwitcher'; // 👈 IMPORT CORRECT
+import { useTranslationContext } from '../TranslationContext'; // 👈 IMPORT UNIQUE ET CORRECT
 
 // =================================================================
-// 🚨 CONTEXTE DE TRADUCTION - DUPLICATION POUR TYPE CHECKING SEULEMENT
-// Ceci DOIT correspondre à la définition exacte dans App.tsx
+// 🚨 TYPES GLOBALS (Doivent correspondre à App.tsx)
 // =================================================================
-// Cette structure est nécessaire pour que les composants puissent communiquer la traduction.
-
-interface TranslationContextType {
-    // Le type 'any' est utilisé ici pour simplifier la compilation dans l'environnement à fichier unique.
-    t: (key: any) => string; 
-    i18n: {
-        language: 'fr' | 'en';
-        changeLanguage: (newLang: 'fr' | 'en') => void;
-    };
-}
-
-// NOTE: Le 'TranslationContext' réel doit être créé et exporté depuis App.tsx. 
-// Dans cet environnement à fichier unique, nous allons simuler l'accès au contexte 
-// en utilisant un hook mock qui lit le localStorage pour la synchronisation.
-
-const LANG_STORAGE_KEY = 'i18nextLng';
-
-// -----------------------------------------------------------------
-// Simulation du Hook de Contexte/Traduction pour la Navbar
-// -----------------------------------------------------------------
-// La Navbar utilise maintenant une version locale et simplifiée du mock 
-// qui se synchronise uniquement via localStorage pour éviter les problèmes 
-// d'importation circulaire dans notre structure actuelle.
-const useTranslationMockInNavbar = () => {
-    // Détecte la langue stockée au démarrage
-    const initialLangCode = (localStorage.getItem(LANG_STORAGE_KEY) || navigator.language).substring(0, 2);
-    const initialLang = initialLangCode === 'fr' ? 'fr' : 'en';
-
-    const [lang, setLang] = useState<'fr' | 'en'>(initialLang); 
-
-    // Ressources de traduction minimales nécessaires pour la Navbar
-    const i18nMockResources = {
-        en: {
-            "work": "Work", "insights": "Insights", "pricing": "Pricing", "company": "Company", "contact": "Contact", "get_a_quote": "Get a Quote", "global_access": "Global Access",
-        },
-        fr: {
-            "work": "Projets", "insights": "Analyses", "pricing": "Tarification", "company": "Entreprise", "contact": "Contact", "get_a_quote": "Demander un Devis", "global_access": "Accès Global",
-        }
-    };
-
-    const t = useCallback((key: keyof typeof i18nMockResources.en): string => {
-        const currentResources = i18nMockResources[lang] || i18nMockResources['en'];
-        return currentResources[key] || i18nMockResources.en[key] || key;
-    }, [lang]);
-
-    // EFFECT pour SYNC avec LanguageSwitcher via localStorage
-    useEffect(() => {
-        // Intervalle pour la lecture (polling) afin de se synchroniser avec le LanguageSwitcher
-        const interval = setInterval(() => {
-            const storedLang = localStorage.getItem(LANG_STORAGE_KEY);
-            const newLang = storedLang?.substring(0, 2) === 'fr' ? 'fr' : 'en';
-            if (newLang !== lang) {
-                setLang(newLang);
-            }
-        }, 500); // Vérification fréquente
-
-        return () => clearInterval(interval);
-    }, [lang]);
-
-    return { 
-        t, 
-        i18n: { 
-            language: lang, 
-        } 
-    };
-};
-
-
-// *****************************************************************
-// 🇫🇷 NAVBAR COMPONENT
-// *****************************************************************
-
-// Déclarations des dépendances des autres fichiers pour la compilation
-declare const LanguageSwitcher: React.FC<any>; 
 type PageView = 'home' | 'pricing' | 'quote' | 'work' | 'company';
 interface NavProps {
     currentPage: PageView;
@@ -87,20 +14,30 @@ interface NavProps {
 }
 
 
+// *****************************************************************
+// 🇫🇷 NAVBAR COMPONENT
+// *****************************************************************
+
+
 const Navbar: React.FC<NavProps> = ({ currentPage, onNavigate }) => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   
-  // Utilisation du hook SIMULÉ DANS LA NAVBAR pour la traduction et la synchro
-  const { t } = useTranslationMockInNavbar(); 
+  // ✅ Utilisation du hook du Contexte global (pas de mock, pas de polling)
+  const { t } = useTranslationContext(); 
 
   useEffect(() => {
     const handleScroll = () => {
-      setIsScrolled(window.scrollY > 50);
+      // Détermine l'état du défilement. On considère l'état 'scrolled' même si ce n'est pas la page d'accueil
+      setIsScrolled(window.scrollY > 50 || currentPage !== 'home');
     };
+    
+    // Exécuter une fois pour l'état initial si la page n'est pas 'home'
+    handleScroll();
+    
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
+  }, [currentPage]); // Re-déclenche si la page change
 
   const handleNavClick = (sectionId: string) => {
     onNavigate('home', sectionId);
@@ -122,18 +59,15 @@ const Navbar: React.FC<NavProps> = ({ currentPage, onNavigate }) => {
         {/* Logo - Concept */}
         <button onClick={() => onNavigate('home')} className="flex items-center gap-0.5 group">
             <span className="text-xl md:text-2xl font-serif font-bold tracking-widest text-white">LINK</span>
-            {/* ... Symbole Binoculaire ... */}
-            <div className="flex items-center mx-1 relative">
-                {/* Left Barrel */}
+            {/* ... Symbole Binoculaire (code SVG simplifié ou omis pour l'espace)... */}
+             <div className="flex items-center mx-1 relative">
                 <div className="w-7 h-7 rounded-full border-[2.5px] border-gray-600 bg-[#0a0a0a] relative flex items-center justify-center shadow-inner">
                     <div className="absolute inset-0 bg-gradient-to-tr from-indigo-900/60 via-transparent to-emerald-900/40 opacity-80 rounded-full"></div>
                     <div className="w-2.5 h-2.5 rounded-full bg-black border border-[#D1A954]/30 shadow-[0_0_5px_rgba(255,255,255,0.1)]"></div>
                     <div className="absolute top-1 right-1.5 w-1 h-1 bg-white/70 rounded-full blur-[0.5px]"></div>
                 </div>
-                {/* Mechanical Bridge */}
                 <div className="flex flex-col items-center justify-center -mx-0.5 z-10">
                      <div className="w-3 h-[2px] bg-gray-500 rounded-sm mb-[1px]"></div>
-                     {/* Focus Wheel */}
                      <div className="w-2 h-4 bg-gray-700 rounded-[1px] border border-gray-800 flex flex-col justify-evenly">
                          <div className="w-full h-[1px] bg-black/50"></div>
                          <div className="w-full h-[1px] bg-black/50"></div>
@@ -141,7 +75,6 @@ const Navbar: React.FC<NavProps> = ({ currentPage, onNavigate }) => {
                      </div>
                      <div className="w-3 h-[2px] bg-gray-500 rounded-sm mt-[1px]"></div>
                 </div>
-                {/* Right Barrel */}
                 <div className="w-7 h-7 rounded-full border-[2.5px] border-gray-600 bg-[#0a0a0a] relative flex items-center justify-center shadow-inner">
                     <div className="absolute inset-0 bg-gradient-to-tl from-indigo-900/60 via-transparent to-emerald-900/40 opacity-80 rounded-full"></div>
                     <div className="w-2.5 h-2.5 rounded-full bg-black border border-[#D1A954]/30 shadow-[0_0_5px_rgba(255,255,255,0.1)]"></div>
@@ -211,7 +144,8 @@ const Navbar: React.FC<NavProps> = ({ currentPage, onNavigate }) => {
               SÉLECTEUR DE LANGUE (Desktop - Affichage XL)
               ****************************** */}
           <div className="hidden xl:flex items-center">
-             <LanguageSwitcher />
+             {/* ✅ Le LanguageSwitcher utilise le Contexte Global */}
+             <LanguageSwitcher /> 
           </div>
 
           {/* Global Access - Subtle Tech Style (Original) */}
@@ -295,6 +229,7 @@ const Navbar: React.FC<NavProps> = ({ currentPage, onNavigate }) => {
                      ****************************** */}
                  <div className="mb-4 flex items-center gap-4 text-xs font-medium text-gray-400 uppercase tracking-widest">
                      <Globe className="w-4 h-4"/> 
+                     {/* ✅ Le LanguageSwitcher utilise le Contexte Global */}
                      <LanguageSwitcher /> 
                  </div>
 
