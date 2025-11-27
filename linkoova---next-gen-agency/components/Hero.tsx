@@ -2,11 +2,11 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { ArrowRight, CheckCircle2, Globe2 } from 'lucide-react';
 
-// 1. Importer le HOC et les types
+// 1. 🛑 CORRECTION CRITIQUE : Importation du HOC depuis le dossier 'utils'
 import { withTranslation, WithTranslationProps } from '../utils/withTranslation'; 
-// ⚠️ VÉRIFIEZ le chemin './utils/withTranslation' est correct par rapport à Hero.tsx
+// VÉRIFIEZ : '../utils/' est le chemin correct depuis le dossier 'components' vers le dossier 'utils'
 
-// 2. Définir les props du composant (ici, seulement les props injectées par le HOC)
+// 2. Définir les props du composant (il reçoit uniquement les props injectées par le HOC)
 type FinalHeroProps = WithTranslationProps;
 
 // Le composant reçoit (t, i18n) en tant que props
@@ -14,7 +14,7 @@ const HeroComponent: React.FC<FinalHeroProps> = ({ t }) => {
   return (
     <section className="relative w-full h-screen flex items-center justify-center overflow-hidden bg-transparent">
       
-      {/* DÉBUT DU FOND (Aucune traduction nécessaire ici) */}
+      {/* DÉBUT DU FOND (Code non traduit) */}
       <div className="absolute inset-0 z-0">
         <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1451187580459-43490279c0fa?q=80&w=2672&auto=format&fit=crop')] bg-cover bg-center opacity-30 scale-105 animate-[pulse_10s_ease-in-out_infinite]" />
         <div className="absolute inset-0 bg-gradient-to-b from-[#0B0B0C]/80 via-[#0B0B0C]/50 to-[#0B0B0C]" />
@@ -42,10 +42,9 @@ const HeroComponent: React.FC<FinalHeroProps> = ({ t }) => {
         >
           <span className="inline-flex items-center justify-center gap-1 md:gap-4 flex-wrap md:flex-nowrap">
               <span>LINK</span>
-              
               {/* ... Votre logo complexe de binoculaire ... */}
               <div className="flex items-center gap-0.5 mx-2 relative mt-1 md:mt-2 group">
-                  {/* Omitted detailed binocular code for brevity */}
+                  {/* Code du logo omis pour la clarté */}
               </div>
               <span>VA</span>
           </span>
@@ -63,7 +62,7 @@ const HeroComponent: React.FC<FinalHeroProps> = ({ t }) => {
         >
           {/* 🛑 TRADUCTION : DESCRIPTION */}
           {t('hero_description')}
-          {/* NOTE: Pour les mots en gras, vous devrez utiliser une variable dans la traduction ou diviser la phrase */}
+          {/* NOTE: Si vous utilisez cette clé, assurez-vous que les balises <span> sont dans le JSON de traduction ou gérez le gras via des composants. */}
         </motion.p>
 
         <motion.div
@@ -115,5 +114,5 @@ const HeroComponent: React.FC<FinalHeroProps> = ({ t }) => {
   );
 };
 
-// 3. 🚀 Appliquer le HOC à l'exportation (C'est la partie clé!)
+// 3. 🚀 Appliquer le HOC à l'exportation
 export default withTranslation(HeroComponent);
