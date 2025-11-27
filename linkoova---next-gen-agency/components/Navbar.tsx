@@ -1,90 +1,98 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useContext } from 'react';
 import { Menu, X, Globe, Sparkles, MessageSquare } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-// Définitions de types pour la compilation
+
+// =================================================================
+// 🚨 CONTEXTE DE TRADUCTION - DUPLICATION POUR TYPE CHECKING SEULEMENT
+// Ceci DOIT correspondre à la définition exacte dans App.tsx
+// =================================================================
+// Cette structure est nécessaire pour que les composants puissent communiquer la traduction.
+
+interface TranslationContextType {
+    // Le type 'any' est utilisé ici pour simplifier la compilation dans l'environnement à fichier unique.
+    t: (key: any) => string; 
+    i18n: {
+        language: 'fr' | 'en';
+        changeLanguage: (newLang: 'fr' | 'en') => void;
+    };
+}
+
+// NOTE: Le 'TranslationContext' réel doit être créé et exporté depuis App.tsx. 
+// Dans cet environnement à fichier unique, nous allons simuler l'accès au contexte 
+// en utilisant un hook mock qui lit le localStorage pour la synchronisation.
+
+const LANG_STORAGE_KEY = 'i18nextLng';
+
+// -----------------------------------------------------------------
+// Simulation du Hook de Contexte/Traduction pour la Navbar
+// -----------------------------------------------------------------
+// La Navbar utilise maintenant une version locale et simplifiée du mock 
+// qui se synchronise uniquement via localStorage pour éviter les problèmes 
+// d'importation circulaire dans notre structure actuelle.
+const useTranslationMockInNavbar = () => {
+    // Détecte la langue stockée au démarrage
+    const initialLangCode = (localStorage.getItem(LANG_STORAGE_KEY) || navigator.language).substring(0, 2);
+    const initialLang = initialLangCode === 'fr' ? 'fr' : 'en';
+
+    const [lang, setLang] = useState<'fr' | 'en'>(initialLang); 
+
+    // Ressources de traduction minimales nécessaires pour la Navbar
+    const i18nMockResources = {
+        en: {
+            "work": "Work", "insights": "Insights", "pricing": "Pricing", "company": "Company", "contact": "Contact", "get_a_quote": "Get a Quote", "global_access": "Global Access",
+        },
+        fr: {
+            "work": "Projets", "insights": "Analyses", "pricing": "Tarification", "company": "Entreprise", "contact": "Contact", "get_a_quote": "Demander un Devis", "global_access": "Accès Global",
+        }
+    };
+
+    const t = useCallback((key: keyof typeof i18nMockResources.en): string => {
+        const currentResources = i18nMockResources[lang] || i18nMockResources['en'];
+        return currentResources[key] || i18nMockResources.en[key] || key;
+    }, [lang]);
+
+    // EFFECT pour SYNC avec LanguageSwitcher via localStorage
+    useEffect(() => {
+        // Intervalle pour la lecture (polling) afin de se synchroniser avec le LanguageSwitcher
+        const interval = setInterval(() => {
+            const storedLang = localStorage.getItem(LANG_STORAGE_KEY);
+            const newLang = storedLang?.substring(0, 2) === 'fr' ? 'fr' : 'en';
+            if (newLang !== lang) {
+                setLang(newLang);
+            }
+        }, 500); // Vérification fréquente
+
+        return () => clearInterval(interval);
+    }, [lang]);
+
+    return { 
+        t, 
+        i18n: { 
+            language: lang, 
+        } 
+    };
+};
+
+
+// *****************************************************************
+// 🇫🇷 NAVBAR COMPONENT
+// *****************************************************************
+
+// Déclarations des dépendances des autres fichiers pour la compilation
+declare const LanguageSwitcher: React.FC<any>; 
 type PageView = 'home' | 'pricing' | 'quote' | 'work' | 'company';
 interface NavProps {
     currentPage: PageView;
     onNavigate: (page: PageView, sectionId?: string) => void;
 }
 
-// *****************************************************************
-// 🚨 CONTOURNEMENT POUR ENVIRONNEMENT MONO-FICHIER (i18n SIMULÉ) - DUPLIQUÉ
-// Cette logique est dupliquée de LanguageSwitcher.tsx pour garantir la compilation
-// sans imports externes.
-// *****************************************************************
-
-const i18nMockResources = {
-  en: {
-    "work": "Work", "insights": "Insights", "pricing": "Pricing", "company": "Company", "contact": "Contact", "get_a_quote": "Get a Quote", "global_access": "Global Access",
-    "contact_button_label": "Let's Talk", "welcome_message": "Welcome to the next generation agency.", "page_title": "Home"
-  },
-  fr: {
-    "work": "Projets", "insights": "Analyses", "pricing": "Tarification", "company": "Entreprise", "contact": "Contact", "get_a_quote": "Demander un Devis", "global_access": "Accès Global",
-    "contact_button_label": "Discutons", "welcome_message": "Bienvenue dans l'agence nouvelle génération.", "page_title": "Accueil"
-  }
-};
-
-const LANG_STORAGE_KEY = 'i18nextLng';
-
-const useTranslationMock = () => {
-  // Détecte la langue stockée ou par défaut
-  const initialLangCode = (localStorage.getItem(LANG_STORAGE_KEY) || navigator.language).substring(0, 2);
-  const initialLang = initialLangCode === 'fr' ? 'fr' : 'en';
-
-  const [lang, setLang] = useState<'fr' | 'en'>(initialLang); 
-  const [currentResources, setCurrentResources] = useState(i18nMockResources[lang]);
-
-  // Fonction de traduction
-  const t = useCallback((key: keyof typeof i18nMockResources.en): string => {
-    return currentResources[key] || i18nMockResources.en[key] || key;
-  }, [currentResources]);
-
-  // Fonction pour changer la langue (pour la cohérence, mais LanguageSwitcher gère l'appel)
-  const changeLanguage = (newLang: 'fr' | 'en') => {
-    if (newLang !== lang) {
-      setLang(newLang);
-      setCurrentResources(i18nMockResources[newLang]);
-      localStorage.setItem(LANG_STORAGE_KEY, newLang);
-    }
-  };
-
-  // EFFECT pour SYNCHRONISER: Vérifie le localStorage pour détecter les changements faits par LanguageSwitcher
-  useEffect(() => {
-    const interval = setInterval(() => {
-      const storedLang = localStorage.getItem(LANG_STORAGE_KEY);
-      if (storedLang && storedLang.substring(0, 2) !== lang) {
-        setLang(storedLang.substring(0, 2) as 'fr' | 'en');
-        setCurrentResources(i18nMockResources[storedLang.substring(0, 2) as 'fr' | 'en']);
-      }
-    }, 500); // Poll toutes les 500ms
-    return () => clearInterval(interval);
-  }, [lang]);
-
-
-  return { 
-    t, 
-    i18n: { 
-      language: lang, 
-      changeLanguage 
-    } 
-  };
-};
-
-// *****************************************************************
-// 🇫🇷 COMMENCE LE COMPOSANT NAVBAR
-// *****************************************************************
-
-// Import du LanguageSwitcher (doit être le composant complet et auto-suffisant)
-import { LanguageSwitcher } from './LanguageSwitcher'; 
-
 
 const Navbar: React.FC<NavProps> = ({ currentPage, onNavigate }) => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   
-  // Utilisation du hook SIMULÉ pour la traduction
-  const { t } = useTranslationMock(); 
+  // Utilisation du hook SIMULÉ DANS LA NAVBAR pour la traduction et la synchro
+  const { t } = useTranslationMockInNavbar(); 
 
   useEffect(() => {
     const handleScroll = () => {
@@ -152,14 +160,14 @@ const Navbar: React.FC<NavProps> = ({ currentPage, onNavigate }) => {
               currentPage === 'work' ? 'text-[#D1A954]' : 'text-gray-400 hover:text-[#D1A954]'
             }`}
           >
-            {t('work')} {/* Traduction appliquée */}
+            {t('work')}
           </button>
 
           <button
             onClick={() => handleNavClick('why-us')}
             className="text-xs lg:text-sm font-medium text-gray-400 hover:text-[#D1A954] transition-colors tracking-widest uppercase"
           >
-            {t('insights')} {/* Traduction appliquée */}
+            {t('insights')}
           </button>
           
           {/* Pricing Link */}
@@ -169,7 +177,7 @@ const Navbar: React.FC<NavProps> = ({ currentPage, onNavigate }) => {
               currentPage === 'pricing' ? 'text-[#D1A954]' : 'text-gray-400 hover:text-[#D1A954]'
             }`}
           >
-            {t('pricing')} {/* Traduction appliquée */}
+            {t('pricing')}
             {currentPage !== 'pricing' && <span className="w-1 h-1 rounded-full bg-[#D1A954]" />}
           </button>
 
@@ -179,7 +187,7 @@ const Navbar: React.FC<NavProps> = ({ currentPage, onNavigate }) => {
               currentPage === 'company' ? 'text-[#D1A954]' : 'text-gray-400 hover:text-[#D1A954]'
             }`}
           >
-            {t('company')} {/* Traduction appliquée */}
+            {t('company')}
           </button>
 
           {/* Contact Link */}
@@ -192,7 +200,7 @@ const Navbar: React.FC<NavProps> = ({ currentPage, onNavigate }) => {
             }}
             className="text-xs lg:text-sm font-medium text-gray-400 hover:text-[#D1A954] transition-colors tracking-widest uppercase"
           >
-            {t('contact')} {/* Traduction appliquée */}
+            {t('contact')}
           </button>
         </div>
 
@@ -212,7 +220,7 @@ const Navbar: React.FC<NavProps> = ({ currentPage, onNavigate }) => {
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
               <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
             </span>
-            {t('global_access')} {/* Traduction appliquée */}
+            {t('global_access')}
           </button>
 
           {/* Get a Quote Button */}
@@ -224,7 +232,7 @@ const Navbar: React.FC<NavProps> = ({ currentPage, onNavigate }) => {
                 : 'border border-[#D1A954] text-[#D1A954] hover:bg-[#D1A954] hover:text-black'
             }`}
           >
-            {t('get_a_quote')} {/* Traduction appliquée */}
+            {t('get_a_quote')}
           </button>
           
           <button
