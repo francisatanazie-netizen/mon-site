@@ -2,12 +2,7 @@ import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 
 const Contact: React.FC = () => {
-  // L'état `formState` et la fonction `handleChange` ne sont plus nécessaires 
-  // car nous utilisons la soumission native HTML de Netlify.
-
-  // NOTE : J'ai mis en commentaire le useState et handleChange au cas où vous en auriez besoin plus tard, 
-  // mais ils ne sont PAS utilisés dans cette configuration de formulaire Netlify.
-  /*
+  // 1. Réactivation de l'état local du formulaire
   const [formState, setFormState] = useState({
     name: '',
     email: '',
@@ -16,44 +11,55 @@ const Contact: React.FC = () => {
     message: ''
   });
 
+  // 2. Gestion de l'état de soumission pour feedback utilisateur
+  const [status, setStatus] = useState<'idle' | 'submitting' | 'success' | 'error'>('idle');
+  const [message, setMessage] = useState('');
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     setFormState({ ...formState, [e.target.name]: e.target.value });
   };
-  */
 
-  // La fonction handleSubmit doit simplement prévenir l'événement par défaut de React 
-  // et laisser le navigateur gérer la soumission vers Netlify (via l'attribut action)
-  const handleSubmit = (e: React.FormEvent) => {
-    // Si nous utilisions l'action native, nous ne ferions rien ici, 
-    // mais dans React, il est souvent plus simple de laisser la fonction être appelée 
-    // et gérer l'envoi soi-même (méthode Netlify 2).
-
-    // Pour l'approche la plus simple (méthode Netlify 1 - HTML natif), 
-    // on retire l'onSubmit de la balise <form>.
-
-    // Pour l'approche la plus robuste avec React, nous allons utiliser 'fetch' 
-    // pour que le formulaire reste dans une Single Page Application.
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    // Collecte des données du formulaire
-    const form = e.target as HTMLFormElement;
-    const data = new FormData(form);
-    
-    // Envoi des données à Netlify (via le fetch, ou en laissant l'action native)
-    // Pour ne pas complexifier, je vais adapter la méthode 1 (HTML natif) 
-    // et enlever l'onSubmit de la balise <motion.form> !
-    
-    // IMPORTANT : Pour que React et Netlify fonctionnent ensemble sans problème, 
-    // il est souvent plus propre d'utiliser la soumission native HTML.
-    // Nous allons RETIRER l'attribut onSubmit={handleSubmit} de <motion.form>
-    
-    // *** Comme la soumission native est meilleure pour Netlify, 
-    // j'ai retiré 'onSubmit={handleSubmit}' dans le code ci-dessous. ***
+    setStatus('submitting');
+    setMessage('');
 
-    // Si vous souhaitez utiliser une alerte de succès (bien que Netlify en fournisse une)
-    // vous devrez utiliser la méthode Fetch API et le formulaire n'est pas optimisé pour cela.
+    // Création des données encodées, OBLIGATOIRE pour Netlify via fetch
+    const encoded = new URLSearchParams();
     
-    // Pour l'instant, nous laissons le formulaire soumis au backend Netlify.
+    // Ajout du champ caché requis par Netlify
+    encoded.append('form-name', 'contact-form');
+    
+    // Ajout des données du formulaire
+    Object.entries(formState).forEach(([key, value]) => {
+      // Assurez-vous que la valeur n'est pas nulle pour l'encodage
+      if (value !== null) {
+        encoded.append(key, value as string);
+      }
+    });
+
+    try {
+        // Envoi des données au chemin racine, Netlify intercepte le POST
+        const response = await fetch("/", {
+            method: "POST",
+            headers: { "Content-Type": "application/x-www-form-urlencoded" },
+            body: encoded.toString()
+        });
+
+        if (response.ok) {
+            setStatus('success');
+            setMessage("Merci ! Votre message a été envoyé avec succès. Nous vous contacterons bientôt.");
+            // Efface le formulaire après succès
+            setFormState({ name: '', email: '', company: '', budget: '', message: '' }); 
+        } else {
+            setStatus('error');
+            setMessage("Une erreur s'est produite lors de l'envoi. Veuillez réessayer.");
+        }
+    } catch (error) {
+        console.error('Submission error:', error);
+        setStatus('error');
+        setMessage("Erreur de connexion. Veuillez vérifier votre réseau.");
+    }
   };
 
 
@@ -76,14 +82,12 @@ const Contact: React.FC = () => {
           </div>
 
           <motion.form 
-            // ATTRIBUTS CRUCIAUX POUR NETLIFY :
-            // 1. name="contact-form" : nom du formulaire pour l'administration Netlify
-            // 2. method="POST" : requis par Netlify
-            // 3. data-netlify="true" : indique à Netlify de traiter la soumission
+            // 3. Réactivation de la fonction de soumission
+            onSubmit={handleSubmit}
+            // ATTRIBUTS CRUCIAUX POUR NETLIFY (toujours nécessaires)
             name="contact-form" 
             method="POST" 
             data-netlify="true"
-            // J'ai RETIRÉ onSubmit={handleSubmit} pour que la soumission soit purement HTML/Netlify
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
@@ -98,11 +102,12 @@ const Contact: React.FC = () => {
                 <input 
                   id="name"
                   type="text" 
-                  name="name" // L'attribut 'name' est utilisé par Netlify pour identifier le champ
+                  name="name"
                   required
+                  value={formState.name} // Liaison à l'état React
+                  onChange={handleChange} // Gestion du changement
                   className="w-full bg-white/5 border border-white/10 p-3 text-white focus:outline-none focus:border-[#D1A954] transition-colors"
                   placeholder="John Doe"
-                  // Pas de onChange pour la soumission Netlify native
                 />
               </div>
               <div className="space-y-2">
@@ -112,9 +117,10 @@ const Contact: React.FC = () => {
                   type="email" 
                   name="email"
                   required
+                  value={formState.email} // Liaison à l'état React
+                  onChange={handleChange} // Gestion du changement
                   className="w-full bg-white/5 border border-white/10 p-3 text-white focus:outline-none focus:border-[#D1A954] transition-colors"
                   placeholder="john@company.com"
-                  // Pas de onChange pour la soumission Netlify native
                 />
               </div>
             </div>
@@ -125,9 +131,10 @@ const Contact: React.FC = () => {
                 id="company"
                 type="text" 
                 name="company"
+                value={formState.company} // Liaison à l'état React
+                onChange={handleChange} // Gestion du changement
                 className="w-full bg-white/5 border border-white/10 p-3 text-white focus:outline-none focus:border-[#D1A954] transition-colors"
                 placeholder="Company Name"
-                // Pas de onChange pour la soumission Netlify native
               />
             </div>
 
@@ -136,8 +143,9 @@ const Contact: React.FC = () => {
               <select 
                 id="budget"
                 name="budget"
+                value={formState.budget} // Liaison à l'état React
+                onChange={handleChange} // Gestion du changement
                 className="w-full bg-white/5 border border-white/10 p-3 text-white focus:outline-none focus:border-[#D1A954] transition-colors appearance-none"
-                // Pas de onChange pour la soumission Netlify native
               >
                 <option value="" className="bg-[#0B0B0C]">Select a range</option>
                 <option value="10k-50k" className="bg-[#0B0B0C]">$10k - $50k</option>
@@ -153,17 +161,28 @@ const Contact: React.FC = () => {
                 name="message"
                 rows={4}
                 required
+                value={formState.message} // Liaison à l'état React
+                onChange={handleChange} // Gestion du changement
                 className="w-full bg-white/5 border border-white/10 p-3 text-white focus:outline-none focus:border-[#D1A954] transition-colors"
                 placeholder="Tell us about your goals..."
-                // Pas de onChange pour la soumission Netlify native
               />
             </div>
+            
+            {/* 4. Affichage du statut (succès/erreur) */}
+            {message && (
+                <div 
+                    className={`p-3 text-sm rounded ${status === 'success' ? 'bg-green-600 text-white' : 'bg-red-600 text-white'}`}
+                >
+                    {message}
+                </div>
+            )}
 
             <button 
               type="submit"
-              className="w-full bg-[#D1A954] text-[#0B0B0C] font-semibold py-4 uppercase tracking-widest hover:bg-white transition-colors duration-300"
+              disabled={status === 'submitting'} // Désactive le bouton pendant l'envoi
+              className="w-full bg-[#D1A954] text-[#0B0B0C] font-semibold py-4 uppercase tracking-widest hover:bg-white transition-colors duration-300 disabled:opacity-50"
             >
-              Launch Transformation
+              {status === 'submitting' ? 'Sending...' : 'Launch Transformation'}
             </button>
           </motion.form>
 
