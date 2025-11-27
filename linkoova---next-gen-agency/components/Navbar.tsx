@@ -4,18 +4,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 // 🛑 NOUVEAUX IMPORTS : Link et useLocation pour le routage
 import { Link, useLocation } from 'react-router-dom';
 
-// =================================================================
-// 🛑 SUPPRESSION : Les types PageView et NavProps ne sont plus nécessaires
-// =================================================================
-// type PageView = 'home' | 'pricing' | 'quote' | 'work' | 'company';
-// interface NavProps {
-//     currentPage: PageView;
-//     onNavigate: (page: PageView, sectionId?: string) => void;
-// }
-
-
 // *****************************************************************
-// 🇫🇷 NAVBAR COMPONENT
+// 🇫🇷 NAVBAR COMPONENT - VERSION STABILISÉE
 // *****************************************************************
 
 // Définitions des textes en dur (EN)
@@ -29,30 +19,27 @@ const TEXTS = {
     global_access: "Global Access",
 };
 
-// 🛑 REMPLACÉ : Le composant n'a plus besoin des props currentPage et onNavigate
 const Navbar: React.FC = () => {
     const [isScrolled, setIsScrolled] = useState(false);
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
     
-    // 🛑 NOUVEAU : useLocation pour déterminer le chemin actif et gérer le style
+    // 🛑 useLocation pour déterminer le chemin actif et gérer le style
     const location = useLocation();
 
     useEffect(() => {
         const handleScroll = () => {
             // isScrolled est vrai si on a scrollé OU si on n'est pas sur la Home Page (path !== '/')
             const isHomePage = location.pathname === '/';
-            setIsScrolled(window.scrollY > 50 || !isHomePage);
+            // Un seuil plus bas pour le scroll pour activer le fond solide
+            setIsScrolled(window.scrollY > 10 || !isHomePage);
         };
         
         handleScroll();
         
         window.addEventListener('scroll', handleScroll);
         return () => window.removeEventListener('scroll', handleScroll);
-    }, [location.pathname]); // Dépendance mise à jour
+    }, [location.pathname]);
 
-    // 🛑 SUPPRESSION : handleNavClick et handlePageNav sont supprimées
-    // La navigation est gérée directement par les composants <Link>
-    
     // Fonction utilitaire pour le style des liens actifs
     const getLinkClass = (path: string, exactMatch: boolean = true) => {
         let isActive = false;
@@ -60,11 +47,10 @@ const Navbar: React.FC = () => {
         if (path === '/') {
             isActive = location.pathname === '/';
         } else if (location.hash === '#contact' && path === '/#contact') {
-             isActive = true; // Gère spécifiquement l'ancre contact
+             isActive = true; 
         } else if (exactMatch) {
             isActive = location.pathname === path;
         } else {
-            // Pour les liens qui doivent rester actifs même si un sous-chemin est utilisé (moins courant)
             isActive = location.pathname.startsWith(path);
         }
 
@@ -77,27 +63,27 @@ const Navbar: React.FC = () => {
         `;
     };
 
-
     const navItems = [
         { name: TEXTS.work, path: '/work' },
-        // Insights pointait vers #why-us sur la home page
         { name: TEXTS.insights, path: '/#why-us' }, 
         { name: TEXTS.pricing, path: '/pricing' },
         { name: TEXTS.company, path: '/company' },
     ];
 
+    // ✅ VERSION STABILISÉE: Fond noir solide au scroll, transparent/noir très léger au top.
+    const navBackgroundClasses = isScrolled
+        ? // État "scrollé" ou non Home Page : Fond noir solide pour une visibilité garantie
+          'bg-[#0B0B0C] py-4 shadow-lg border-b border-white/5' 
+        : // État "non scrollé" sur la Home Page : Fond légèrement transparent au top
+          'bg-black/30 py-6'; 
 
     return (
         <nav
-            // Logique de scroll mise à jour
-            className={`fixed top-0 left-0 w-full z-50 transition-all duration-300 ${
-                // ✅ CORRECTION : Remplace 'bg-transparent' par 'bg-black/20' pour assurer un contraste minimal en haut de page.
-                isScrolled ? 'glass py-4' : 'bg-black/20 py-6' 
-            }`}
+            // Utilisation des classes stabilisées ci-dessus.
+            className={`fixed top-0 left-0 w-full z-50 transition-all duration-300 ${navBackgroundClasses}`}
         >
             <div className="container mx-auto px-6 flex items-center justify-between">
                 {/* Logo - Concept */}
-                {/* 🛑 UTILISATION DE <Link> pour le logo */}
                 <Link to="/" className="flex items-center gap-0.5 group">
                     <span className="text-xl md:text-2xl font-serif font-bold tracking-widest text-white hover:text-[#D1A954] transition-colors">LINK</span>
                     {/* Symbole Binoculaire */}
@@ -128,12 +114,11 @@ const Navbar: React.FC = () => {
                 {/* Desktop Links (Main Navigation) */}
                 <div className="hidden md:flex items-center gap-8 lg:gap-10">
                     
-                    {/* 🛑 UTILISATION DES COMPOSANTS <Link> */}
+                    {/* UTILISATION DES COMPOSANTS <Link> */}
                     {navItems.map((item) => (
                         <Link 
                             key={item.name} 
                             to={item.path}
-                            // Pour les liens qui pointent vers la home page avec ancre (Insights -> /#why-us)
                             onClick={() => setIsMobileMenuOpen(false)}
                             className={`text-xs lg:text-sm font-medium transition-colors tracking-widest uppercase flex items-center gap-2 
                                 ${getLinkClass(item.path)}
@@ -171,7 +156,6 @@ const Navbar: React.FC = () => {
                     </button>
 
                     {/* Get a Quote Button */}
-                    {/* 🛑 UTILISATION DE <Link> pour le CTA */}
                     <Link 
                         to="/quote"
                         className={`hidden md:flex items-center gap-2 px-5 py-2 text-xs font-bold uppercase tracking-widest transition-all ${
