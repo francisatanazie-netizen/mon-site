@@ -1,25 +1,25 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
-import App from './App.tsx';
-import './index.css';
+// Assurez-vous d'importer vos styles globaux
+import './index.css'; 
+// Assurez-vous d'importer votre composant principal
+import App from './App';
+// Import OBLIGATOIRE pour le routage
+import { BrowserRouter } from 'react-router-dom'; 
 
-// 1. Import de la configuration du moteur de traduction
-import i18n from './i18n.ts'; 
+const rootElement = document.getElementById('root');
 
-// 2. Import du composant Fournisseur de Contexte React-i18next
-import { I18nextProvider } from 'react-i18next'; 
-
-// 🛑 NOUVEL IMPORT : Le fournisseur de routage
-import { BrowserRouter } from 'react-router-dom';
-
-ReactDOM.createRoot(document.getElementById('root')!).render(
-  <React.StrictMode>
-    {/* 🛑 ÉTAPE 2 : BrowserRouter doit être le parent pour le routage de l'URL */}
-    <BrowserRouter>
-      {/* I18nextProvider est maintenant à l'intérieur du routeur */}
-      <I18nextProvider i18n={i18n}>
-        <App />
-      </I18nextProvider>
-    </BrowserRouter>
-  </React.StrictMode>,
-);
+if (rootElement) {
+  ReactDOM.createRoot(rootElement).render(
+    <React.StrictMode>
+      {/* L'utilisation de BrowserRouter est cruciale. Elle fournit le contexte
+          de routage (location, history) à tous les composants enfants (dont App et Navbar) */}
+      <BrowserRouter> 
+        <App />
+      </BrowserRouter>
+    </React.StrictMode>,
+  );
+} else {
+  // Optionnel : un message d'erreur si l'élément racine n'est pas trouvé
+  console.error("Failed to find the root element with ID 'root'");
+}
