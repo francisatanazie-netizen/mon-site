@@ -91,7 +91,8 @@ const Navbar: React.FC = () => {
         <nav
             // Logique de scroll mise à jour
             className={`fixed top-0 left-0 w-full z-50 transition-all duration-300 ${
-                isScrolled ? 'glass py-4' : 'bg-transparent py-6'
+                // ✅ CORRECTION : Remplace 'bg-transparent' par 'bg-black/20' pour assurer un contraste minimal en haut de page.
+                isScrolled ? 'glass py-4' : 'bg-black/20 py-6' 
             }`}
         >
             <div className="container mx-auto px-6 flex items-center justify-between">
