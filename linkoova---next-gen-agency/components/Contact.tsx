@@ -1,9 +1,17 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 
+// Définition des types pour une meilleure gestion d'état (TypeScript)
+interface FormState {
+  name: string;
+  email: string;
+  company: string;
+  budget: string;
+  message: string;
+}
+
 const Contact: React.FC = () => {
-  // 1. Réactivation de l'état local du formulaire
-  const [formState, setFormState] = useState({
+  const [formState, setFormState] = useState<FormState>({
     name: '',
     email: '',
     company: '',
@@ -11,7 +19,6 @@ const Contact: React.FC = () => {
     message: ''
   });
 
-  // 2. Gestion de l'état de soumission pour feedback utilisateur
   const [status, setStatus] = useState<'idle' | 'submitting' | 'success' | 'error'>('idle');
   const [message, setMessage] = useState('');
 
@@ -24,45 +31,35 @@ const Contact: React.FC = () => {
     setStatus('submitting');
     setMessage('');
 
-    // Création des données encodées, OBLIGATOIRE pour Netlify via fetch
-    const encoded = new URLSearchParams();
-    
-    // Ajout du champ caché requis par Netlify
-    encoded.append('form-name', 'contact-form');
-    
-    // Ajout des données du formulaire
-    Object.entries(formState).forEach(([key, value]) => {
-      // Assurez-vous que la valeur n'est pas nulle pour l'encodage
-      if (value !== null) {
-        encoded.append(key, value as string);
-      }
-    });
+    // --- PRÉPARATION DES DONNÉES ---
+    const form = e.currentTarget as HTMLFormElement;
+    const formData = new FormData(form);
+
+    // Netlify requiert l'encodage URL pour le Content-Type: application/x-www-form-urlencoded
+    const encodedData = new URLSearchParams(formData as any).toString();
 
     try {
-        // Envoi des données au chemin racine. 
-        // NOTE: Certains frameworks nécessitent window.location.pathname au lieu de "/", 
-        // mais nous laissons "/" pour la compatibilité maximale Netlify.
         const response = await fetch("/", {
             method: "POST",
+            // Définition du Content-Type requis pour Netlify Forms (données non-fichiers)
             headers: { "Content-Type": "application/x-www-form-urlencoded" },
-            body: encoded.toString()
+            body: encodedData // Utilisation des données encodées
         });
 
         if (response.ok) {
             setStatus('success');
-            setMessage("Merci ! Votre message a été envoyé avec succès. Nous vous contacterons bientôt.");
-            // Efface le formulaire après succès
+            setMessage("Merci ! Votre message a été envoyé avec succès.");
+            // Réinitialisation du formulaire
             setFormState({ name: '', email: '', company: '', budget: '', message: '' }); 
         } else {
             setStatus('error');
-            // Affichage de l'erreur brute si possible pour le débogage, sinon message générique
+            // Gérer les erreurs spécifiques de Netlify
             const errorText = await response.text();
             console.error('Netlify Form Error Details:', errorText);
-            // Si le code est 404, le formulaire n'est pas détecté. 
-            // Nous affichons un message plus précis pour cette erreur.
-            let displayMessage = "Une erreur s'est produite lors de l'envoi. Veuillez réessayer. (Code: " + response.status + ")";
+
+            let displayMessage = "Une erreur s'est produite lors de l'envoi. Veuillez réessayer.";
             if (response.status === 404) {
-                displayMessage = "Erreur 404: Le formulaire n'a pas été détecté par Netlify. Veuillez vérifier que votre site a été entièrement redéployé APRÈS l'ajout du formulaire caché.";
+                 displayMessage = "Erreur 404: La détection du formulaire par Netlify a échoué. **Vérifiez l'Étape 2 ci-dessous.**";
             }
             setMessage(displayMessage);
         }
@@ -75,27 +72,26 @@ const Contact: React.FC = () => {
 
 
   return (
-    // L'ID 'contact' est essentiel pour la navigation par ancre de la Navbar
     <section id="contact" className="py-24 bg-[#0B0B0C] border-t border-white/5">
       <div className="container mx-auto px-6 max-w-5xl">
         <div className="grid md:grid-cols-2 gap-12">
           
+          {/* Section d'information à gauche */}
           <div>
             <h2 className="text-4xl md:text-5xl font-serif text-white mb-6">Let's build the <br /> extraordinary.</h2>
             <p className="text-gray-400 mb-8 font-light">
               Ready to accelerate your digital transformation? Tell us about your project, and our strategists will provide a preliminary roadmap.
             </p>
-            
             <div className="space-y-4 text-gray-500 text-sm">
-               <p>New Business: <span className="text-white">hello@linkoova.com</span></p>
-               <p>Careers: <span className="text-white">talent@linkoova.com</span></p>
+                <p>New Business: <span className="text-white">hello@linkoova.com</span></p>
+                <p>Careers: <span className="text-white">talent@linkoova.com</span></p>
             </div>
           </div>
 
+          {/* FORMULAIRE REACT/JSX (Soumission Asynchrone) */}
           <motion.form 
-            // 3. Réactivation de la fonction de soumission
             onSubmit={handleSubmit}
-            // ATTRIBUTS CRUCIAUX POUR NETLIFY (toujours nécessaires)
+            // ATTRIBUTS CRUCIAUX POUR NETLIFY
             name="contact-form" 
             method="POST" 
             data-netlify="true"
@@ -104,59 +100,62 @@ const Contact: React.FC = () => {
             viewport={{ once: true }}
             className="space-y-6"
           >
-            {/* CHAMPS CACHÉS OBLIGATOIRES POUR NETLIFY */}
-            {/* Ce champ est crucial pour le fetch asynchrone */}
+            {/* 🛑 CHAMP CACHÉ ESSENTIEL pour la soumission AJAX */}
             <input type="hidden" name="form-name" value="contact-form" />
             
             <div className="grid grid-cols-2 gap-6">
+              {/* Champ Name */}
               <div className="space-y-2">
                 <label htmlFor="name" className="text-xs text-[#D1A954] uppercase tracking-wider">Name</label>
                 <input 
                   id="name"
                   type="text" 
-                  name="name"
+                  name="name" // 🛑 NAME doit correspondre au formulaire caché
                   required
-                  value={formState.name} // Liaison à l'état React
-                  onChange={handleChange} // Gestion du changement
+                  value={formState.name} 
+                  onChange={handleChange} 
                   className="w-full bg-white/5 border border-white/10 p-3 text-white focus:outline-none focus:border-[#D1A954] transition-colors"
                   placeholder="John Doe"
                 />
               </div>
+              {/* Champ Email */}
               <div className="space-y-2">
                 <label htmlFor="email" className="text-xs text-[#D1A954] uppercase tracking-wider">Email</label>
                 <input 
                   id="email"
                   type="email" 
-                  name="email"
+                  name="email" // 🛑 NAME doit correspondre au formulaire caché
                   required
-                  value={formState.email} // Liaison à l'état React
-                  onChange={handleChange} // Gestion du changement
+                  value={formState.email} 
+                  onChange={handleChange} 
                   className="w-full bg-white/5 border border-white/10 p-3 text-white focus:outline-none focus:border-[#D1A954] transition-colors"
                   placeholder="john@company.com"
                 />
               </div>
             </div>
 
+            {/* Champ Company */}
             <div className="space-y-2">
               <label htmlFor="company" className="text-xs text-[#D1A954] uppercase tracking-wider">Company</label>
               <input 
                 id="company"
                 type="text" 
-                name="company"
-                value={formState.company} // Liaison à l'état React
-                onChange={handleChange} // Gestion du changement
+                name="company" // 🛑 NAME doit correspondre au formulaire caché
+                value={formState.company} 
+                onChange={handleChange} 
                 className="w-full bg-white/5 border border-white/10 p-3 text-white focus:outline-none focus:border-[#D1A954] transition-colors"
                 placeholder="Company Name"
               />
             </div>
 
+            {/* Champ Budget (Select) */}
             <div className="space-y-2">
               <label htmlFor="budget" className="text-xs text-[#D1A954] uppercase tracking-wider">Project Budget</label>
               <select 
                 id="budget"
-                name="budget"
-                value={formState.budget} // Liaison à l'état React
-                onChange={handleChange} // Gestion du changement
+                name="budget" // 🛑 NAME doit correspondre au formulaire caché
+                value={formState.budget} 
+                onChange={handleChange} 
                 className="w-full bg-white/5 border border-white/10 p-3 text-white focus:outline-none focus:border-[#D1A954] transition-colors appearance-none"
               >
                 <option value="" className="bg-[#0B0B0C]">Select a range</option>
@@ -166,21 +165,22 @@ const Contact: React.FC = () => {
               </select>
             </div>
 
+            {/* Champ Message (Textarea) */}
             <div className="space-y-2">
               <label htmlFor="message" className="text-xs text-[#D1A954] uppercase tracking-wider">Message</label>
               <textarea 
                 id="message"
-                name="message"
+                name="message" // 🛑 NAME doit correspondre au formulaire caché
                 rows={4}
                 required
-                value={formState.message} // Liaison à l'état React
-                onChange={handleChange} // Gestion du changement
+                value={formState.message} 
+                onChange={handleChange} 
                 className="w-full bg-white/5 border border-white/10 p-3 text-white focus:outline-none focus:border-[#D1A954] transition-colors"
                 placeholder="Tell us about your goals..."
               />
             </div>
             
-            {/* 4. Affichage du statut (succès/erreur) */}
+            {/* Affichage du statut (succès/erreur) */}
             {message && (
                 <motion.div 
                     initial={{ opacity: 0 }}
@@ -193,32 +193,32 @@ const Contact: React.FC = () => {
 
             <button 
               type="submit"
-              disabled={status === 'submitting'} // Désactive le bouton pendant l'envoi
+              disabled={status === 'submitting'} 
               className="w-full bg-[#D1A954] text-[#0B0B0C] font-semibold py-4 uppercase tracking-widest hover:bg-white transition-colors duration-300 disabled:opacity-50"
             >
               {status === 'submitting' ? 'Sending...' : 'Launch Transformation'}
             </button>
           </motion.form>
 
-          {/* Ajout du FORMULAIRE CACHÉ pour la détection statique par Netlify.
-            Ceci corrige l'erreur 400/500 lorsque le site est déployé.
-            Il doit contenir les mêmes attributs 'name' et le 'form-name'.
-          */}
-          <form name="contact-form" netlify hidden>
-            <input type="text" name="name" />
-            <input type="email" name="email" />
-            <input type="text" name="company" />
-            <select name="budget">
-              <option value=""></option>
-              <option value="10k-50k"></option>
-              <option value="50k-100k"></option>
-              <option value="100k+"></option>
-            </select>
-            <textarea name="message"></textarea>
-          </form>
-
         </div>
       </div>
+
+      {/* 🛑 VOUS AVEZ DÉJÀ INCLUS LE FORMULAIRE CACHÉ ICI, C'EST BIEN. */}
+      {/* C'est la solution la plus courante pour les sites React/Gatsby/Next.js. */}
+      {/* Assurez-vous simplement que le nom 'contact-form' est unique. */}
+      <form name="contact-form" netlify hidden>
+          <input type="text" name="name" />
+          <input type="email" name="email" />
+          <input type="text" name="company" />
+          <select name="budget">
+            <option value=""></option>
+            <option value="10k-50k"></option>
+            <option value="50k-100k"></option>
+            <option value="100k+"></option>
+          </select>
+          <textarea name="message"></textarea>
+      </form>
+
     </section>
   );
 };
