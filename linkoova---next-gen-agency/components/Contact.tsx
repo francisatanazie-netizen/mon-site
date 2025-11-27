@@ -39,7 +39,9 @@ const Contact: React.FC = () => {
     });
 
     try {
-        // Envoi des données au chemin racine, Netlify intercepte le POST
+        // Envoi des données au chemin racine. 
+        // NOTE: Certains frameworks nécessitent window.location.pathname au lieu de "/", 
+        // mais nous laissons "/" pour la compatibilité maximale Netlify.
         const response = await fetch("/", {
             method: "POST",
             headers: { "Content-Type": "application/x-www-form-urlencoded" },
@@ -56,7 +58,13 @@ const Contact: React.FC = () => {
             // Affichage de l'erreur brute si possible pour le débogage, sinon message générique
             const errorText = await response.text();
             console.error('Netlify Form Error Details:', errorText);
-            setMessage("Une erreur s'est produite lors de l'envoi. Veuillez réessayer. (Code: " + response.status + ")");
+            // Si le code est 404, le formulaire n'est pas détecté. 
+            // Nous affichons un message plus précis pour cette erreur.
+            let displayMessage = "Une erreur s'est produite lors de l'envoi. Veuillez réessayer. (Code: " + response.status + ")";
+            if (response.status === 404) {
+                displayMessage = "Erreur 404: Le formulaire n'a pas été détecté par Netlify. Veuillez vérifier que votre site a été entièrement redéployé APRÈS l'ajout du formulaire caché.";
+            }
+            setMessage(displayMessage);
         }
     } catch (error) {
         console.error('Submission error:', error);
@@ -174,11 +182,13 @@ const Contact: React.FC = () => {
             
             {/* 4. Affichage du statut (succès/erreur) */}
             {message && (
-                <div 
+                <motion.div 
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
                     className={`p-3 text-sm rounded ${status === 'success' ? 'bg-green-600 text-white' : 'bg-red-600 text-white'}`}
                 >
                     {message}
-                </div>
+                </motion.div>
             )}
 
             <button 
