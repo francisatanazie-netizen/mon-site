@@ -1,12 +1,11 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
-import Navbar from './components/Navbar'; // Le Navbar corrigé utilisant le Contexte
-import LanguageSwitcher from './components/LanguageSwitcher'; // Importé mais utilisé dans Navbar
 
 // =================================================================
-// 🚨 IMPORTS DE VOS ANCIENS COMPOSANTS (À RÉTABLIR)
+// 🚨 IMPORTS DES COMPOSANTS (RÉTABLIS)
 // =================================================================
-import Hero from './components/Hero'; 
-import About from './components/About';
+import Navbar from './components/Navbar';
+import Hero from './components/Hero'; // 👈 Maintenant enveloppé par le HOC
+import About from './components/About'; // 👈 Maintenant enveloppé par le HOC
 import Services from './components/Services';
 import Portfolio from './components/Portfolio';
 import WhyUs from './components/WhyUs';
@@ -23,7 +22,6 @@ import GlobalBackground from './components/GlobalBackground';
 
 import { 
     TranslationContext, 
-    useTranslationContext, 
     i18nMockResources, 
     LANG_STORAGE_KEY,
     AppLang,
@@ -31,17 +29,17 @@ import {
 import { PageView } from './types'; // 👈 VOTRE TYPE PAGEVIEW
 
 // =================================================================
-// 🚨 HOOK DE TRADUCTION UNIQUE (LA SOURCE DE VÉRITÉ) - Identique à l'étape précédente
+// 🚨 HOOK DE TRADUCTION UNIQUE (LA SOURCE DE VÉRITÉ) - Identique
 // =================================================================
 
 const useTranslationService = () => {
-    // 1. Détecte la langue stockée ou par défaut
+    // Détecte la langue stockée ou par défaut
     const initialLangCode = (localStorage.getItem(LANG_STORAGE_KEY) || navigator.language).substring(0, 2);
     const initialLang = initialLangCode === 'fr' ? 'fr' : 'en';
 
     const [lang, setLang] = useState<AppLang>(initialLang);
 
-    // 2. Fonction pour changer la langue
+    // Fonction pour changer la langue
     const changeLanguage = useCallback((newLang: AppLang) => {
         if (newLang !== lang) {
             setLang(newLang);
@@ -49,13 +47,13 @@ const useTranslationService = () => {
         }
     }, [lang]);
 
-    // 3. Fonction de traduction
+    // Fonction de traduction
     const t = useCallback((key: keyof typeof i18nMockResources.en): string => {
         const currentResources = i18nMockResources[lang];
         return currentResources[key] || i18nMockResources.en[key] || key;
     }, [lang]);
 
-    // 4. Mémoriser la valeur du contexte
+    // Mémoriser la valeur du contexte
     const contextValue = useMemo(() => ({
         t,
         i18n: {
@@ -75,10 +73,8 @@ const useTranslationService = () => {
 function App() {
     const [currentPage, setCurrentPage] = useState<PageView>('home');
     
-    // Initialisez le service de traduction
+    // Initialisez le service de traduction unique (étape 1)
     const translationService = useTranslationService();
-    // Le 't' n'est plus strictement nécessaire ici, mais gardons-le
-    // const { t } = translationService; 
 
     // Reset scroll on page change
     useEffect(() => {
@@ -99,21 +95,21 @@ function App() {
     };
 
     return (
-        // 1. Fournir le Contexte de Traduction
+        // 2. Le TranslationContext enveloppe l'ensemble de l'application
         <TranslationContext.Provider value={translationService}>
             <div className="min-h-screen text-white selection:bg-[#D1A954] selection:text-black cursor-none relative">
                 
-                {/* 2. Composants globaux/de fond */}
                 <GlobalBackground />
                 <CustomCursor /> 
+                
+                {/* Navbar n'a pas besoin du HOC s'il utilise le hook directement pour changer la langue */}
                 <Navbar currentPage={currentPage} onNavigate={handleNavigate} />
                 
-                {/* 3. Rendu du Contenu (Basé sur votre code initial) */}
                 <main className="relative z-10">
                     {currentPage === 'home' && (
                         <>
-                            {/* Assurez-vous que Hero, About, etc. utilisent useTranslationContext() */}
-                            <Hero />
+                            {/* Les composants sont rendus normalement, le HOC fait la magie */}
+                            <Hero /> 
                             <About />
                             <Services />
                             <Portfolio onNavigate={handleNavigate} />
@@ -122,7 +118,6 @@ function App() {
                             <Contact />
                         </>
                     )}
-                    {/* Les autres pages dédiées (doivent aussi utiliser useTranslationContext() si elles ont du texte) */}
                     {currentPage === 'pricing' && <Pricing />}
                     {currentPage === 'quote' && <Quote />}
                     {currentPage === 'work' && <Work />}
