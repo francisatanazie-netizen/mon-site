@@ -1,17 +1,23 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { ArrowRight, TrendingUp, Zap, Target, Hexagon, Diamond, ShieldCheck, Globe, Smartphone, CreditCard, Layout, Landmark, ShoppingBag } from 'lucide-react';
-import { Link } from 'react-router-dom';
+// J'ai mis à jour les importations Lucide-React pour correspondre au nouveau contenu.
+import { ArrowRight, TrendingUp, Zap, Target, Globe, Landmark, ShoppingBag, ShieldCheck, ArrowRight as ArrowRightIcon } from 'lucide-react';
+// Link de react-router-dom est ajouté, mais je l'ai commenté car non utilisé dans la version finale du JSX.
+// import { Link } from 'react-router-dom'; 
+
+// --- NOUVEAUX SOUS-COMPOSANTS (BrowserWindow et ClientLogo) ---
 
 // Browser Frame Component to give the "Template Website" look
 const BrowserWindow = ({ children, className = '' }: { children?: React.ReactNode, className?: string }) => (
   <div className={`rounded-lg overflow-hidden border border-white/10 bg-[#1A1A1A] shadow-2xl ${className} group-hover:border-[#D1A954]/30 transition-colors duration-500`}>
     <div className="h-8 bg-[#121213] border-b border-white/5 flex items-center px-4 gap-2">
+      {/* Simulation des boutons de fenêtre (rouge, jaune, vert) */}
       <div className="flex gap-2 opacity-50">
         <div className="w-2.5 h-2.5 rounded-full bg-[#FF5F57]"></div>
         <div className="w-2.5 h-2.5 rounded-full bg-[#FEBC2E]"></div>
         <div className="w-2.5 h-2.5 rounded-full bg-[#28C840]"></div>
       </div>
+      {/* Barre d'adresse simulée */}
       <div className="ml-4 flex-1 h-4 bg-white/5 rounded-full max-w-[300px] hidden sm:block"></div>
     </div>
     <div className="relative">
@@ -21,6 +27,7 @@ const BrowserWindow = ({ children, className = '' }: { children?: React.ReactNod
 );
 
 // Client Logo Component
+// 'any' est utilisé pour le type d'icône car c'est un composant React (Lucide-React)
 const ClientLogo = ({ icon: Icon, name, colorClass }: { icon: any, name: string, colorClass: string }) => (
   <div className="inline-flex items-center gap-3 px-5 py-3 rounded-xl bg-white/5 border border-white/10 backdrop-blur-sm mb-6">
     <div className={`p-2 rounded-lg ${colorClass} bg-opacity-10`}>
@@ -33,7 +40,10 @@ const ClientLogo = ({ icon: Icon, name, colorClass }: { icon: any, name: string,
   </div>
 );
 
+// --- COMPOSANT PRINCIPAL ---
+
 const Work: React.FC = () => {
+  // Structure de données enrichie par l'IA
   const cases = [
     {
       id: 'banking-luxembourg',
@@ -41,8 +51,8 @@ const Work: React.FC = () => {
       industry: "FinTech - Luxembourg",
       title: "Private Banking Digital Fortress",
       subtitle: "Secure Wealth Portal for Ultra-High-Net-Worth Clients",
-      category: "Secure Web Platform",
-      year: "2024",
+      category: "Secure Web Platform", // Non utilisé dans le rendu final mais dans les données
+      year: "2024", // Non utilisé dans le rendu final mais dans les données
       image: "https://images.unsplash.com/photo-1460925895917-afdab827c52f?q=80&w=2426&auto=format&fit=crop",
       
       situation: "A 150-year-old private bank in Luxembourg City managing €4B AUM. They relied on PDF reports sent via email. Next-gen heirs demanded real-time digital access, but strict CSSF security compliance made off-the-shelf solutions impossible.",
@@ -142,10 +152,10 @@ const Work: React.FC = () => {
 
   return (
     <div className="bg-[#0B0B0C] min-h-screen pt-32 pb-24 relative overflow-hidden">
-      {/* Grid Pattern Background - Defined in index.html */}
+      {/* Grid Pattern Background - Conservé de la version initiale */}
       <div className="grid-pattern"></div>
       
-      {/* Hero Section */}
+      {/* Header / Hero Section - Adaptation du nouveau contenu avec l'animation Framer Motion de l'ancien code */}
       <div className="container mx-auto px-6 mb-24 text-center relative z-10">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -176,7 +186,7 @@ const Work: React.FC = () => {
         </motion.p>
       </div>
 
-      {/* Intro Section */}
+      {/* Intro Section - NOUVELLE SECTION */}
       <div className="container mx-auto px-6 mb-32 relative z-10">
         <div className="max-w-4xl mx-auto text-center">
           <motion.div
@@ -196,7 +206,7 @@ const Work: React.FC = () => {
         </div>
       </div>
 
-      {/* Case Studies List */}
+      {/* Case Studies List - Utilise le mapping existant, mais avec la nouvelle structure interne */}
       <div className="container mx-auto px-6 space-y-32 relative z-10">
         {cases.map((project, index) => (
           <motion.div 
@@ -207,21 +217,23 @@ const Work: React.FC = () => {
             transition={{ duration: 0.8 }}
             className="group"
           >
-            {/* Project Header */}
+            {/* Project Header - Utilise le nouveau composant ClientLogo */}
             <div className="flex flex-col md:flex-row justify-between items-start md:items-end mb-8 border-b border-white/10 pb-8">
               <div>
+                {/* Intégration du nouveau composant ClientLogo */}
                 <ClientLogo icon={project.logo.icon} name={project.logo.name} colorClass={project.logo.color} />
                 <h2 className="text-3xl md:text-5xl font-serif text-white mb-2">{project.title}</h2>
                 <p className="text-gray-400 text-lg">{project.subtitle}</p>
               </div>
               <div className="mt-6 md:mt-0">
+                {/* Adaptation de l'affichage de l'industrie/catégorie */}
                 <span className="px-4 py-2 border border-white/10 rounded-full text-xs text-white uppercase tracking-wider bg-black/40 backdrop-blur-sm">
                   {project.industry}
                 </span>
               </div>
             </div>
 
-            {/* Project Image - Browser Frame Style */}
+            {/* Project Image - Utilise le nouveau composant BrowserWindow */}
             <div className="mb-12">
               <BrowserWindow>
                 <div className="relative aspect-video w-full overflow-hidden">
@@ -237,8 +249,10 @@ const Work: React.FC = () => {
 
             {/* Detailed Content */}
             <div className="grid lg:grid-cols-12 gap-12">
-              {/* Left Column: Situation & Solution */}
+              {/* Left Column: Situation & Solution & Insight */}
               <div className="lg:col-span-7 space-y-12">
+                
+                {/* The Situation (Ancien: Challenge) */}
                 <div>
                   <h3 className="text-xl font-serif text-white mb-4 flex items-center gap-3">
                     <span className="w-8 h-px bg-[#D1A954]"></span> The Situation
@@ -248,6 +262,7 @@ const Work: React.FC = () => {
                   </p>
                 </div>
                 
+                {/* What We Changed (Ancien: Solution) */}
                 <div>
                   <h3 className="text-xl font-serif text-white mb-4 flex items-center gap-3">
                     <span className="w-8 h-px bg-[#D1A954]"></span> What We Changed
@@ -257,6 +272,7 @@ const Work: React.FC = () => {
                   </p>
                 </div>
 
+                {/* Why It Worked (Nouvelle section: Insight) */}
                 <div>
                   <h3 className="text-xl font-serif text-white mb-4 flex items-center gap-3">
                     <span className="w-8 h-px bg-[#D1A954]"></span> Why It Worked
@@ -269,7 +285,8 @@ const Work: React.FC = () => {
 
               {/* Right Column: Results & Stack */}
               <div className="lg:col-span-5 space-y-6">
-                {/* Results Table */}
+                
+                {/* Results Table - NOUVEAU FORMAT */}
                 <div className="bg-[#121213] border border-white/5 rounded-sm overflow-hidden hover:border-[#D1A954]/20 transition-colors">
                   <div className="bg-gradient-to-r from-[#D1A954]/10 to-transparent p-6 border-b border-white/5">
                     <h4 className="text-white font-bold text-sm uppercase tracking-widest flex items-center gap-2">
@@ -288,7 +305,7 @@ const Work: React.FC = () => {
                           </div>
                           <div className="flex items-center gap-3">
                             <span className="text-sm text-gray-500 font-mono">{res.before}</span>
-                            <ArrowRight className="w-3 h-3 text-gray-600" />
+                            <ArrowRightIcon className="w-3 h-3 text-gray-600" />
                             <span className="text-lg text-white font-semibold font-mono">{res.after}</span>
                           </div>
                         </div>
@@ -297,7 +314,7 @@ const Work: React.FC = () => {
                   </div>
                 </div>
 
-                {/* Tech Stack */}
+                {/* Tech Stack - Adaptation de l'ancien style à la nouvelle section */}
                 <div className="bg-[#121213] border border-white/5 p-6 rounded-sm hover:border-[#D1A954]/20 transition-colors">
                   <h4 className="text-white font-bold text-sm uppercase tracking-widest mb-4 flex items-center gap-2">
                     <Zap className="w-4 h-4 text-[#D1A954]" />
@@ -320,7 +337,7 @@ const Work: React.FC = () => {
         ))}
       </div>
 
-      {/* Methodology Section */}
+      {/* Methodology Section - NOUVELLE SECTION */}
       <div className="container mx-auto px-6 mt-32 relative z-10">
         <motion.div
           initial={{ opacity: 0, y: 40 }}
@@ -336,6 +353,7 @@ const Work: React.FC = () => {
           </div>
 
           <div className="grid md:grid-cols-2 gap-6">
+            {/* Carte 1 */}
             <div className="bg-[#121213] border border-white/5 p-8 rounded-sm hover:border-[#D1A954]/20 transition-colors group">
               <div className="text-3xl font-serif text-[#D1A954] mb-4">01</div>
               <h3 className="text-xl font-serif text-white mb-3">Brutal Honesty Audit</h3>
@@ -344,6 +362,7 @@ const Work: React.FC = () => {
               </p>
             </div>
 
+            {/* Carte 2 */}
             <div className="bg-[#121213] border border-white/5 p-8 rounded-sm hover:border-[#D1A954]/20 transition-colors group">
               <div className="text-3xl font-serif text-[#D1A954] mb-4">02</div>
               <h3 className="text-xl font-serif text-white mb-3">Data-Driven Decisions</h3>
@@ -352,6 +371,7 @@ const Work: React.FC = () => {
               </p>
             </div>
 
+            {/* Carte 3 */}
             <div className="bg-[#121213] border border-white/5 p-8 rounded-sm hover:border-[#D1A954]/20 transition-colors group">
               <div className="text-3xl font-serif text-[#D1A954] mb-4">03</div>
               <h3 className="text-xl font-serif text-white mb-3">Performance Engineering</h3>
@@ -360,6 +380,7 @@ const Work: React.FC = () => {
               </p>
             </div>
 
+            {/* Carte 4 */}
             <div className="bg-[#121213] border border-white/5 p-8 rounded-sm hover:border-[#D1A954]/20 transition-colors group">
               <div className="text-3xl font-serif text-[#D1A954] mb-4">04</div>
               <h3 className="text-xl font-serif text-white mb-3">Global Intelligence</h3>
@@ -371,48 +392,19 @@ const Work: React.FC = () => {
         </motion.div>
       </div>
 
-      {/* Final CTA Section */}
+      {/* CTA Section - Conservé de la version initiale */}
       <div className="container mx-auto px-6 mt-32 text-center relative z-10">
-        <div className="bg-gradient-to-b from-[#121213] to-[#0B0B0C] border border-white/10 rounded-sm relative overflow-hidden">
-          <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-[#D1A954] to-transparent"></div>
-          
-          {/* Stats Row */}
-          <div className="grid grid-cols-3 gap-8 p-12 border-b border-white/5 hidden md:grid">
-            <div>
-              <div className="text-4xl md:text-5xl font-serif text-[#D1A954] mb-2">340%</div>
-              <div className="text-xs text-gray-500 uppercase tracking-wider">Avg Traffic Increase</div>
-            </div>
-            <div>
-              <div className="text-4xl md:text-5xl font-serif text-[#D1A954] mb-2">5-13x</div>
-              <div className="text-xs text-gray-500 uppercase tracking-wider">Revenue Multiplier</div>
-            </div>
-            <div>
-              <div className="text-4xl md:text-5xl font-serif text-[#D1A954] mb-2">73%</div>
-              <div className="text-xs text-gray-500 uppercase tracking-wider">AI Accuracy</div>
-            </div>
-          </div>
-
-          {/* CTA Content */}
-          <div className="p-8 md:p-16">
-            <h2 className="text-3xl md:text-4xl font-serif text-white mb-6">Ready to multiply your metrics?</h2>
-            <p className="text-gray-400 max-w-2xl mx-auto mb-8 leading-relaxed">
-              These results aren't luck. They're engineered. Let's run the numbers on your project and show you what's possible.
-            </p>
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-              <Link 
-                to="/contact" 
-                className="inline-flex items-center gap-3 bg-[#D1A954] text-[#0B0B0C] px-8 py-4 uppercase tracking-widest font-bold text-xs hover:bg-white transition-colors"
-              >
-                Get Your Performance Audit <ArrowRight className="w-4 h-4" />
-              </Link>
-              <Link 
-                to="/services" 
-                className="inline-flex items-center gap-3 border border-white/20 text-white px-8 py-4 uppercase tracking-widest font-bold text-xs hover:bg-white/5 transition-colors"
-              >
-                See Our Approach
-              </Link>
-            </div>
-          </div>
+        <div className="bg-gradient-to-b from-[#121213] to-[#0B0B0C] border border-white/10 p-16 rounded-sm relative overflow-hidden">
+             <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-[#D1A954] to-transparent"></div>
+             <div className="relative z-10">
+                 <h2 className="text-3xl md:text-4xl font-serif text-white mb-6">Have a similar challenge?</h2>
+                 <p className="text-gray-400 max-w-xl mx-auto mb-8">
+                     Let's discuss how our engineering and strategy teams can deliver comparable results for your organization.
+                 </p>
+                 <a href="#contact" className="inline-flex items-center gap-3 bg-[#D1A954] text-[#0B0B0C] px-8 py-4 uppercase tracking-widest font-bold text-xs hover:bg-white transition-colors">
+                     Start Your Project <ArrowRight className="w-4 h-4" />
+                 </a>
+             </div>
         </div>
       </div>
     </div>
