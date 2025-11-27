@@ -2,25 +2,23 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { ArrowRight, CheckCircle2, Globe2 } from 'lucide-react';
 
-// 🛑 POINT CRITIQUE : Importation du HOC depuis le dossier 'utils'
-// Assurez-vous que le dossier s'appelle bien 'utils' et non 'utlis'
-import { withTranslation, WithTranslationProps } from '../utils/withTranslation'; 
-
-// 1. Définir le type des props (il reçoit uniquement les props injectées par le HOC)
-type FinalHeroProps = WithTranslationProps;
-
-// Le composant reçoit la fonction t() en tant que prop
-const HeroComponent: React.FC<FinalHeroProps> = ({ t }) => { 
+// Le composant revient à sa version originale sans props, sans HOC
+const Hero: React.FC = () => {
   return (
     <section className="relative w-full h-screen flex items-center justify-center overflow-hidden bg-transparent">
       
-      {/* DÉBUT DU FOND */}
+      {/* DÉBUT DU FOND CORRIGÉ : Image de la Terre et calques sombres */}
       <div className="absolute inset-0 z-0">
+        {/* 1. L'Image de la Terre (Source Unsplash) */}
         <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1451187580459-43490279c0fa?q=80&w=2672&auto=format&fit=crop')] bg-cover bg-center opacity-30 scale-105 animate-[pulse_10s_ease-in-out_infinite]" />
+        
+        {/* 2. Le gradient de noir pour l'assombrissement */}
         <div className="absolute inset-0 bg-gradient-to-b from-[#0B0B0C]/80 via-[#0B0B0C]/50 to-[#0B0B0C]" />
+        
+        {/* 3. L'effet radial subtil (en option) */}
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-indigo-900/20 via-[#0B0B0C]/0 to-[#0B0B0C]" />
       </div>
-      {/* FIN DU FOND */}
+      {/* FIN DU FOND CORRIGÉ */}
 
       <div className="relative z-10 container mx-auto px-6 text-center">
         <motion.div
@@ -30,8 +28,7 @@ const HeroComponent: React.FC<FinalHeroProps> = ({ t }) => {
           className="mb-6 inline-flex items-center gap-2 px-3 py-1 rounded-full border border-[#D1A954]/30 bg-[#D1A954]/5 backdrop-blur-sm"
         >
           <span className="w-2 h-2 rounded-full bg-[#D1A954] animate-pulse" />
-          {/* TRADUCTION : TAGLINE */}
-          <span className="text-[#D1A954] text-xs font-medium uppercase tracking-[0.2em]">{t('hero_tagline')}</span>
+          <span className="text-[#D1A954] text-xs font-medium uppercase tracking-[0.2em]">Next-Gen Agency</span>
         </motion.div>
 
         <motion.h1
@@ -43,8 +40,10 @@ const HeroComponent: React.FC<FinalHeroProps> = ({ t }) => {
           <span className="inline-flex items-center justify-center gap-1 md:gap-4 flex-wrap md:flex-nowrap">
               <span>LINK</span>
               
-              {/* Logo Binoculaire (Code non modifié) */}
+              {/* Ultra-High-Fidelity Binocular Logo (Industrial/Tech Style) */}
               <div className="flex items-center gap-0.5 mx-2 relative mt-1 md:mt-2 group">
+                  
+                  {/* Left Barrel */}
                   <div className="relative w-16 h-16 md:w-28 md:h-28 rounded-full bg-[#0a0a0a] shadow-[0_20px_50px_rgba(0,0,0,0.9)] flex items-center justify-center border-[6px] md:border-[8px] border-[#1a1a1a] ring-1 ring-gray-700/50">
                       <div className="absolute inset-0 rounded-full border border-gray-600/30 opacity-60 flex items-center justify-center">
                          <div className="w-[90%] h-[90%] border border-dashed border-gray-500/30 rounded-full animate-[spin_10s_linear_infinite]"></div>
@@ -58,6 +57,7 @@ const HeroComponent: React.FC<FinalHeroProps> = ({ t }) => {
                       </div>
                   </div>
                   
+                  {/* Heavy Duty Central Hinge & Focus Wheel */}
                   <div className="flex flex-col items-center justify-center h-full z-20 -mx-1 md:-mx-2">
                       <div className="w-6 md:w-10 h-2 md:h-3 bg-gradient-to-b from-[#2a2a2a] to-[#0a0a0a] border-y border-gray-700 rounded-sm shadow-lg mb-0.5"></div>
                       <div className="w-5 md:w-8 h-10 md:h-16 bg-[#151515] rounded-sm border-x border-gray-600 flex flex-col justify-evenly py-[2px] shadow-2xl relative z-30 group-hover:rotate-180 transition-all duration-700">
@@ -68,6 +68,7 @@ const HeroComponent: React.FC<FinalHeroProps> = ({ t }) => {
                       <div className="w-6 md:w-10 h-2 md:h-3 bg-gradient-to-b from-[#2a2a2a] to-[#0a0a0a] border-y border-gray-700 rounded-sm shadow-lg mt-0.5"></div>
                   </div>
                   
+                  {/* Right Barrel */}
                   <div className="relative w-16 h-16 md:w-28 md:h-28 rounded-full bg-[#0a0a0a] shadow-[0_20px_50px_rgba(0,0,0,0.9)] flex items-center justify-center border-[6px] md:border-[8px] border-[#1a1a1a] ring-1 ring-gray-700/50">
                       <div className="absolute inset-0 rounded-full border border-gray-600/30 opacity-60 flex items-center justify-center">
                          <div className="w-[90%] h-[90%] border border-dashed border-gray-500/30 rounded-full animate-[spin_10s_linear_infinite_reverse]"></div>
@@ -80,12 +81,13 @@ const HeroComponent: React.FC<FinalHeroProps> = ({ t }) => {
                           <div className="absolute top-[20%] left-[25%] w-2 h-2 bg-white/80 rounded-full blur-[1px] shadow-[0_0_10px_white]"></div>
                       </div>
                   </div>
+
               </div>
+
               <span>VA</span>
           </span>
-          {/* TRADUCTION : PHRASE PRINCIPALE */}
           <span className="block mt-6 text-3xl md:text-4xl lg:text-5xl font-light tracking-wide text-transparent bg-clip-text bg-gradient-to-r from-white via-[#E8E1D5] to-[#D1A954] opacity-90">
-            {t('hero_title_phrase')} 
+            Link all over the world.
           </span>
         </motion.h1>
 
@@ -95,8 +97,7 @@ const HeroComponent: React.FC<FinalHeroProps> = ({ t }) => {
           transition={{ duration: 0.8, delay: 0.4 }}
           className="text-lg md:text-xl text-gray-400 max-w-2xl mx-auto mb-12 font-light leading-relaxed"
         >
-          {/* TRADUCTION : DESCRIPTION */}
-          {t('hero_description')}
+          We transform local market leaders into international powerhouses using <span className="text-white">proprietary data intelligence</span> and <span className="text-white">high-performance engineering</span>.
         </motion.p>
 
         <motion.div
@@ -110,8 +111,7 @@ const HeroComponent: React.FC<FinalHeroProps> = ({ t }) => {
             className="group relative px-8 py-4 bg-[#D1A954] text-[#0B0B0C] font-bold text-sm tracking-widest uppercase overflow-hidden shadow-[0_0_20px_rgba(209,169,84,0.3)]"
           >
             <span className="relative z-10 flex items-center gap-2">
-              {/* TRADUCTION : CTA 1 */}
-              {t('cta_start_evolution')} <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+              Start Your Evolution <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
             </span>
             <div className="absolute inset-0 bg-white transform -translate-x-full group-hover:translate-x-0 transition-transform duration-300 ease-in-out" />
           </a>
@@ -120,8 +120,7 @@ const HeroComponent: React.FC<FinalHeroProps> = ({ t }) => {
             href="#services"
             className="text-white text-sm tracking-widest uppercase border-b border-transparent hover:border-[#D1A954] hover:text-[#D1A954] transition-all pb-1"
           >
-            {/* TRADUCTION : CTA 2 */}
-            {t('cta_analyze_potential')}
+            Analyze Your Potential
           </a>
         </motion.div>
 
@@ -133,14 +132,12 @@ const HeroComponent: React.FC<FinalHeroProps> = ({ t }) => {
         >
             <div className="flex items-center gap-2">
                 <CheckCircle2 className="w-4 h-4 text-emerald-500" />
-                {/* TRADUCTION : STATISTIQUE 1 */}
-                <span>{t('stat_trusted')}</span>
+                <span>Trusted by 50+ High-Growth Companies</span>
             </div>
             <div className="hidden md:block w-px h-4 bg-white/10"></div>
             <div className="flex items-center gap-2">
                 <Globe2 className="w-4 h-4 text-indigo-500" />
-                {/* TRADUCTION : STATISTIQUE 2 */}
-                <span>{t('stat_active')}</span>
+                <span>Active in 3 Continents</span>
             </div>
         </motion.div>
       </div>
@@ -148,5 +145,4 @@ const HeroComponent: React.FC<FinalHeroProps> = ({ t }) => {
   );
 };
 
-// 3. 🚀 Application du HOC à l'exportation
-export default withTranslation(HeroComponent);
+export default Hero;
