@@ -10,23 +10,21 @@ import Contact from './components/Contact';
 import Footer from './components/Footer';
 import Pricing from './components/Pricing';
 import Quote from './components/Quote';
-import Work from './components/Work'; // Import du composant Work
+import Work from './components/Work';
 import Company from './components/Company';
 import CustomCursor from './components/CustomCursor';
-import GlobalBackground from './components/GlobalBackground'; // Import du fond Three.js
+import GlobalBackground from './components/GlobalBackground'; 
 import { ArrowUp } from 'lucide-react';
-// import { PageView } from './types'; // Le type PageView n'est plus nécessaire
 
-// 🛑 NOUVEAUX IMPORTS DE REACT ROUTER
-import { Routes, Route, useLocation } from 'react-router-dom';
+// Définition du type d'état pour la navigation
+type PageView = '/' | '/work' | '/pricing' | '/quote' | '/company';
 
-// 🛑 NOUVEAU COMPOSANT : Regroupe le contenu de la Home Page
+// NOUVEAU COMPOSANT : Regroupe le contenu de la Home Page
 const HomePageContent: React.FC = () => (
     <>
         <Hero />
         <About />
         <Services />
-        {/* Portfolio n'a plus besoin d'onNavigate car il reste sur la Home Page */}
         <Portfolio /> 
         <WhyUs />
         <Testimonials />
@@ -36,23 +34,23 @@ const HomePageContent: React.FC = () => (
 
 
 function App() {
-    // 🛑 REMPLACÉ : on supprime currentPage et setCurrentPage.
-    // L'état de la page est maintenant géré par l'URL via useLocation.
-    const location = useLocation(); 
-    
+    // Rétablissement de l'état local pour la navigation
+    const [currentPage, setCurrentPage] = useState<PageView>('/'); 
     const [showScrollToTop, setShowScrollToTop] = useState(false);
 
-    // DÉFINITION DE LA LOGIQUE DE FOND GLOBAL : Afficher partout SAUF si le chemin est '/work'
-    const shouldShowGlobalBackground = location.pathname !== '/work';
+    // Fonction de navigation qui met à jour l'état
+    const handleNavigate = (page: PageView) => {
+        setCurrentPage(page);
+    };
 
-    // Reset scroll sur le changement de PATH (URL)
+    // Logique pour déterminer si on affiche le fond dynamique
+    const shouldShowGlobalBackground = currentPage !== '/work';
+
+    // Reset scroll sur le changement de page
     useEffect(() => {
         window.scrollTo({ top: 0, behavior: 'instant' });
-    }, [location.pathname]);
-
-    // 🛑 REMPLACÉ : La fonction handleNavigate est supprimée. 
-    // La navigation se fait via le composant <Link> dans la Navbar.
-
+    }, [currentPage]);
+    
     // Gère l'événement de scroll pour afficher/masquer le bouton
     useEffect(() => {
         const handleScroll = () => {
@@ -75,57 +73,67 @@ function App() {
         });
     };
 
-    // Logique pour l'ancre #contact sur la Home Page (maintenue)
+    // Logique pour l'ancre #contact (maintenue si sur la page d'accueil)
     useEffect(() => {
-        if (location.hash === '#contact' && location.pathname === '/') {
-             setTimeout(() => {
-                const element = document.getElementById('contact');
-                if (element) {
-                    element.scrollIntoView({ behavior: 'smooth' });
-                }
-            }, 100);
+        // Cette logique est plus compliquée sans React Router, on la simplifie
+        // En mode navigation par état, on ne supporte pas le deep linking d'ancre facilement.
+        // On se concentre sur la vue principale.
+    }, [currentPage]); 
+
+    // Logique de rendu en fonction de la currentPage
+    const renderContent = () => {
+        switch (currentPage) {
+            case '/':
+                return <HomePageContent />;
+            case '/pricing':
+                return <Pricing />;
+            case '/quote':
+                return <Quote />;
+            case '/work':
+                return <Work />;
+            case '/company':
+                return <Company />;
+            default:
+                return <HomePageContent />;
         }
-    }, [location.pathname, location.hash]);
+    };
 
 
     return (
-        <div className="min-h-screen text-white selection:bg-[#D1A954] selection:text-black cursor-none relative font-sans antialiased">
+        // GARANTIE DE FOND NOIR : La div principale a un fond solide
+        <div className="min-h-screen text-white selection:bg-[#D1A954] selection:text-black cursor-none relative font-sans antialiased bg-[#0B0B0C]">
             
-            {/* Le GlobalBackground est rendu selon le chemin actuel (path) */}
+            {/* Rendu conditionnel du GlobalBackground */}
             {shouldShowGlobalBackground && <GlobalBackground />}
             
             <CustomCursor />
-            {/* 🛑 Navbar n'a plus besoin de props de navigation 🛑 */}
-            <Navbar /> 
+            {/* Transmission de la fonction de navigation à la Navbar */}
+            <Navbar onNavigate={handleNavigate} currentPage={currentPage} /> 
             
             <main className="relative z-10">
-                {/* 🛑 UTILISATION DES ROUTES REACT ROUTER 🛑 */}
-                <Routes>
-                    {/* Path / -> Home Page */}
-                    <Route path="/" element={<HomePageContent />} />
-                    
-                    {/* Paths uniques pour les autres pages (SEO Friendly) */}
-                    <Route path="/pricing" element={<Pricing />} />
-                    <Route path="/quote" element={<Quote />} />
-                    <Route path="/work" element={<Work />} />
-                    <Route path="/company" element={<Company />} />
-                    
-                    {/* Route 404 pour gérer les chemins inconnus */}
-                    <Route path="*" element={<h1 className="pt-48 text-center text-3xl text-red-500">404 - Page Non Trouvée</h1>} />
-                </Routes>
+                {/* Rendu du contenu en fonction de la page actuelle */}
+                {renderContent()}
             </main>
             
             <Footer />
             
-            {/* 1. Bouton Flottant "Contact" / "Let's Go" (Affiché uniquement sur le chemin /) */}
-            {location.pathname === '/' && (<a 
-                    // Le lien est maintenant un lien d'ancre HTML standard
-                    href="#contact" 
+            {/* 1. Bouton Flottant "Contact" / "Let's Go" (Affiché uniquement sur la Home Page) */}
+            {currentPage === '/' && (<button 
+                    // Au clic, navigue vers la page d'accueil puis scroll vers le bas
+                    onClick={() => {
+                        handleNavigate('/');
+                        setTimeout(() => {
+                           const element = document.getElementById('contact');
+                            if (element) {
+                                element.scrollIntoView({ behavior: 'smooth' });
+                            } 
+                        }, 100);
+                    }}
                     className="fixed bottom-6 left-6 z-40 px-6 py-3 bg-[#D1A954] text-black font-bold uppercase tracking-wider rounded-full shadow-2xl transition-all duration-300 hover:bg-[#E0B96A] transform hover:scale-105 text-sm md:text-base"
                     aria-label="Contactez-nous pour un projet"
                 >
                     Let's Go!
-                </a>
+                </button>
             )}
 
             {/* 2. Bouton Flottant "Remonter en haut de page" (Affiché uniquement sur le chemin /) */}
@@ -137,7 +145,7 @@ function App() {
                     bg-white/10 text-white border border-white/20 
                     shadow-xl transition-opacity duration-300 
                     hover:bg-white/20
-                    ${showScrollToTop && location.pathname === '/' ? 'opacity-100 visible' : 'opacity-0 invisible'}
+                    ${showScrollToTop && currentPage === '/' ? 'opacity-100 visible' : 'opacity-0 invisible'}
                 `}
                 aria-label="Remonter en haut de page"
             >
