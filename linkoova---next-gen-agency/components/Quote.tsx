@@ -6,6 +6,39 @@ import { CHAT_FLOW_BILINGUAL, Language } from '../constants/chatData';
 
 emailjs.init("_sHyfwIAzyg5Krf5j");
 
+// --- COMPOSANT ÉTOILES FILANTES ---
+const ShootingStars = () => {
+  const [stars, setStars] = useState<any[]>([]);
+
+  useEffect(() => {
+    const createStar = () => ({
+      id: Math.random(),
+      top: Math.random() * 70 + "%",
+      left: Math.random() * 100 + "%",
+      duration: Math.random() * 2 + 2,
+      delay: Math.random() * 10
+    });
+    setStars(Array.from({ length: 12 }, createStar));
+  }, []);
+
+  return (
+    <div className="absolute inset-0 overflow-hidden pointer-events-none">
+      {stars.map((star) => (
+        <motion.div
+          key={star.id}
+          initial={{ x: "-100px", y: "-100px", opacity: 0 }}
+          animate={{ x: "1000px", y: "800px", opacity: [0, 1, 0] }}
+          transition={{ duration: star.duration, repeat: Infinity, delay: star.delay, ease: "linear" }}
+          className="absolute w-[2px] h-[2px] bg-[#D1A954] shadow-[0_0_20px_#D1A954]"
+          style={{ top: star.top, left: star.left, rotate: "35deg" }}
+        >
+          <div className="absolute top-0 left-0 w-[120px] h-[1px] bg-gradient-to-r from-[#D1A954] to-transparent transform -translate-x-full" />
+        </motion.div>
+      ))}
+    </div>
+  );
+};
+
 const Quote: React.FC = () => {
   const [lang, setLang] = useState<Language | null>(null);
   const [currentStep, setCurrentStep] = useState('start');
@@ -23,7 +56,20 @@ const Quote: React.FC = () => {
     if (chatEndRef.current) chatEndRef.current.scrollIntoView({ behavior: 'smooth' });
   }, [messages, isTyping]);
 
+  // FONCTION CORRIGÉE : Lance le bot immédiatement après le choix de langue
+  const handleLanguage = (l: Language) => {
+    setLang(l);
+    setIsTyping(true);
+    setTimeout(() => {
+      const firstData = CHAT_FLOW_BILINGUAL[l].start;
+      setMessages([{ id: 'start', sender: 'bot', text: firstData.text }]);
+      setCurrentStep('start');
+      setIsTyping(false);
+    }, 600);
+  };
+
   const sendAuditData = (finalData: any) => {
+    // Mapping exact avec discovery_source et user_email en q16
     const keyMap: any = {
       q1: 'company_name', q2: 'industry', q3: 'vision_goal',
       q4: 'competitors', q5: 'competitive_advantage', q6: 'market_position',
@@ -38,33 +84,35 @@ const Quote: React.FC = () => {
     });
 
     emailjs.send('service_94yaj7r', 'template_c1xbsvk', templateParams)
-      .then(() => console.log("✅ Rapport Linkoova envoyé"))
-      .catch((err) => console.error("❌ EmailJS Error", err));
+      .then(() => console.log("✅ Audit envoyé avec succès"))
+      .catch((err) => console.error("❌ Erreur EmailJS", err));
   };
 
-  const processNext = (step: string, answer: string) => {
+  const processNext = (nextStep: string, answerValue: string) => {
     if (!lang) return;
 
-    const newFormData = { ...formData, [currentStep]: answer };
-    setFormData(newFormData);
+    // Sauvegarde la réponse dans l'objet global
+    const updatedData = { ...formData, [currentStep]: answerValue };
+    setFormData(updatedData);
 
-    const stepNum = step.match(/\d+/) ? parseInt(step.match(/\d+/)![0]) : 0;
+    // Calcul de la barre de progression (max 16 étapes)
+    const stepNum = nextStep.match(/\d+/) ? parseInt(nextStep.match(/\d+/)![0]) : 16;
     setProgress((stepNum / 16) * 100);
 
-    if (step === 'loading') {
-      sendAuditData(newFormData);
+    if (nextStep === 'loading') {
+      sendAuditData(updatedData);
       return startLoading();
     }
 
     setIsTyping(true);
     setTimeout(() => {
-      const data = CHAT_FLOW_BILINGUAL[lang][step];
-      if (data) {
-        setMessages(prev => [...prev, { id: step, sender: 'bot', text: data.text }]);
-        setCurrentStep(step);
+      const nextData = CHAT_FLOW_BILINGUAL[lang][nextStep];
+      if (nextData) {
+        setMessages(prev => [...prev, { id: nextStep, sender: 'bot', text: nextData.text }]);
+        setCurrentStep(nextStep);
       }
       setIsTyping(false);
-    }, 600);
+    }, 800);
   };
 
   const onOption = (opt: any) => {
@@ -74,12 +122,14 @@ const Quote: React.FC = () => {
 
   const onInput = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!inputValue.trim()) return;
-    const next = CHAT_FLOW_BILINGUAL[lang!][currentStep].nextStep;
-    setMessages(prev => [...prev, { id: Date.now().toString(), sender: 'user', text: inputValue }]);
-    const val = inputValue;
+    if (!inputValue.trim() || !lang) return;
+
+    const next = CHAT_FLOW_BILINGUAL[lang][currentStep].nextStep || 'loading';
+    const text = inputValue;
+    
+    setMessages(prev => [...prev, { id: Date.now().toString(), sender: 'user', text: text }]);
     setInputValue('');
-    if (next) processNext(next, val);
+    processNext(next, text);
   };
 
   const startLoading = () => {
@@ -93,7 +143,7 @@ const Quote: React.FC = () => {
         }
         return { ...prev, progress: prev.progress + 2 };
       });
-    }, 50);
+    }, 40);
   };
 
   const resetAudit = () => {
@@ -102,7 +152,10 @@ const Quote: React.FC = () => {
   };
 
   return (
-    <div className="bg-[#050505] min-h-screen pt-28 pb-20 relative overflow-hidden text-white font-sans">
+    <div className="bg-[#050505] min-h-screen pt-28 pb-20 relative overflow-hidden text-white font-sans selection:bg-[#D1A954]/30">
+      <ShootingStars />
+      
+      {/* Glow effects */}
       <div className="absolute top-[-10%] right-[-10%] w-[50%] h-[50%] bg-[#D1A954] rounded-full blur-[150px] opacity-[0.03]" />
       <div className="absolute bottom-[-10%] left-[-10%] w-[40%] h-[40%] bg-[#D1A954] rounded-full blur-[150px] opacity-[0.02]" />
 
@@ -136,7 +189,7 @@ const Quote: React.FC = () => {
             </div>
 
             <div className="lg:col-span-8">
-              <div className="h-[700px] bg-black border border-white/10 rounded-[3rem] overflow-hidden flex flex-col relative shadow-black/50">
+              <div className="h-[700px] bg-black border border-white/10 rounded-[3rem] overflow-hidden flex flex-col relative shadow-2xl shadow-black/50">
                 <div className="absolute top-0 left-0 w-full h-1.5 bg-white/5 z-20">
                   <motion.div className="h-full bg-[#D1A954] shadow-[0_0_15px_#D1A954]" animate={{ width: `${progress}%` }} />
                 </div>
@@ -155,14 +208,14 @@ const Quote: React.FC = () => {
 
                 {success ? (
                   <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} className="flex-1 flex flex-col items-center justify-center p-12 text-center">
-                    <CheckCircle size={60} className="text-[#D1A954] mb-8 shadow-2xl shadow-[#D1A954]/20"/>
+                    <CheckCircle size={60} className="text-[#D1A954] mb-8"/>
                     <h2 className="text-5xl font-serif mb-6 italic">Data <span className="text-[#D1A954] not-italic">Received.</span></h2>
                     <p className="text-gray-400 mb-10 max-w-sm mx-auto text-sm leading-relaxed">Your audit is being analyzed. You will receive a response within 24h.</p>
                     <button onClick={() => window.location.href = '/'} className="bg-white text-black px-10 py-5 rounded-full font-black text-[10px] uppercase tracking-widest flex items-center gap-3 hover:bg-[#D1A954] transition-all">Return Home <ArrowRight size={14}/></button>
                   </motion.div>
                 ) : (
                   <>
-                    <div className="p-8 border-b border-white/5 flex items-center justify-between bg-white/[0.01] backdrop-blur-md">
+                    <div className="p-8 border-b border-white/5 flex items-center justify-between bg-white/[0.01]">
                       <div className="flex items-center gap-5">
                         <div className="w-14 h-14 rounded-2xl bg-[#D1A954] flex items-center justify-center text-black shadow-xl"><UserCheck size={28}/></div>
                         <div>
