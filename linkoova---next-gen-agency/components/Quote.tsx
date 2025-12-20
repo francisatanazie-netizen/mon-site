@@ -1,8 +1,11 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Send, UserCheck, CheckCircle, RefreshCcw, ArrowRight, ShieldCheck, Clock, Award } from 'lucide-react';
+import { Send, UserCheck, CheckCircle, RefreshCcw, ArrowRight, ShieldCheck, Award } from 'lucide-react';
 import emailjs from '@emailjs/browser';
 import { CHAT_FLOW_BILINGUAL, Language } from '../constants/chatData';
+
+// Initialisation globale
+emailjs.init("T-k-H3YkF8_h2W7tV");
 
 const Quote: React.FC = () => {
   const [lang, setLang] = useState<Language | null>(null);
@@ -23,62 +26,51 @@ const Quote: React.FC = () => {
   }, [messages, isTyping]);
 
   const sendAuditData = (allMessages: any[]) => {
-    const userAnswers = allMessages.filter(m => m.sender === 'user');
-    
+    const userAnswers = allMessages
+      .filter(m => m.sender === 'user')
+      .map(m => m.text);
+
+    console.log("Transmission Audit en cours...", userAnswers);
+
     const templateParams = {
-      header_tag: "LINKOOVA STRATEGIC INTELLIGENCE",
+      // Configuration Header
+      header_tag: "LINKOOVA STRATEGIC HUB",
       report_title: lang === 'FR' ? "RAPPORT D'AUDIT STRATÉGIQUE" : "STRATEGIC AUDIT REPORT",
-      
-      label_identity: lang === 'FR' ? "Identité du Projet" : "Project Identity",
-      q1_label: lang === 'FR' ? "Nom du projet" : "Project Name",
-      company_name: userAnswers[0]?.text || "N/A",
-      q2_label: lang === 'FR' ? "Type de création" : "Project Type",
-      industry: userAnswers[1]?.text || "N/A",
-      q3_label: lang === 'FR' ? "Support demandé" : "Support Type",
-      vision_goal: userAnswers[2]?.text || "N/A",
+      confidential_text: "DOCUMENT CONFIDENTIEL - LINKOOVA PROPRIETARY DATA",
 
-      label_market: lang === 'FR' ? "Analyse Marché" : "Market Analysis",
-      q4_label: lang === 'FR' ? "Public cible" : "Target Audience",
-      competitors: userAnswers[3]?.text || "N/A",
-      q5_label: lang === 'FR' ? "Portée géographique" : "Geo Scope",
-      competitive_advantage: userAnswers[4]?.text || "N/A",
-      q6_label: lang === 'FR' ? "Zones visées" : "Target Zones",
-      market_position: userAnswers[5]?.text || "N/A",
+      // Mapping Dynamique
+      company_name: userAnswers[0] || "Client",
+      industry: userAnswers[1] || "N/A",
+      vision_goal: userAnswers[2] || "N/A",
+      competitors: userAnswers[3] || "N/A",
+      competitive_advantage: userAnswers[4] || "N/A",
+      market_position: userAnswers[5] || "N/A",
+      target_audience: userAnswers[6] || "N/A",
+      ideal_customer_age: userAnswers[7] || "N/A",
+      user_location: userAnswers[8] || "N/A",
+      pain_point: userAnswers[9] || "N/A",
+      current_obstacles: userAnswers[10] || "N/A",
+      ads_strategy: userAnswers[11] || "N/A",
+      marketing_channels: userAnswers[12] || "N/A",
+      budget: userAnswers[13] || "À définir",
+      user_email: userAnswers[userAnswers.length - 1] || "N/A",
 
-      label_audience: lang === 'FR' ? "Identité & Branding" : "Identity & Branding",
-      q7_label: lang === 'FR' ? "Visuel existant" : "Existing Visuals",
-      target_audience: userAnswers[6]?.text || "N/A",
-      q8_label: lang === 'FR' ? "Inspirations" : "Inspirations",
-      ideal_customer_age: userAnswers[7]?.text || "N/A",
-      q9_label: lang === 'FR' ? "Émotion recherchée" : "Brand Emotion",
-      user_location: userAnswers[8]?.text || "N/A",
+      // Sections Labels HTML
+      label_identity: lang === 'FR' ? "Vision du Projet" : "Project Vision",
+      label_market: lang === 'FR' ? "Marché & Cible" : "Market & Target",
+      label_audience: lang === 'FR' ? "Identité Visuelle" : "Visual Identity",
+      label_analysis: lang === 'FR' ? "Fonctionnalités" : "Features",
+      label_acquisition: lang === 'FR' ? "Gestion Business" : "Business Strategy",
+      label_specs: lang === 'FR' ? "Finance & Contact" : "Finance & Contact",
 
-      label_analysis: lang === 'FR' ? "Expertise Technique" : "Technical Expertise",
-      q10_label: lang === 'FR' ? "Fonction clé" : "Core Feature",
-      pain_point: userAnswers[9]?.text || "N/A",
-      q11_label: lang === 'FR' ? "Intégrations" : "Integrations",
-      current_obstacles: userAnswers[10]?.text || "N/A",
-
-      label_acquisition: lang === 'FR' ? "Gestion & Défis" : "Management & Challenges",
-      q12_label: lang === 'FR' ? "Maintenance" : "Maintenance",
-      ads_strategy: userAnswers[11]?.text || "N/A",
-      q13_label: lang === 'FR' ? "Défi principal" : "Main Challenge",
-      marketing_channels: userAnswers[12]?.text || "N/A",
-
-      label_specs: lang === 'FR' ? "Finances & Contact" : "Finance & Contact",
-      q14_label: lang === 'FR' ? "Budget estimé" : "Estimated Budget",
-      budget: userAnswers[13]?.text || "N/A",
-      q15_label: lang === 'FR' ? "Email direct" : "Direct Email",
-      user_email: userAnswers[14]?.text || "N/A",
-
-      project_universe: userAnswers[0]?.text || "PROJET",
-      budget_range: userAnswers[13]?.text || "A définir",
-      confidential_text: "LINKOOVA PROPRIETARY DATA - CONFIDENTIAL"
+      // Params pour le Sujet EmailJS
+      project_universe: userAnswers[0] || "Linkoova",
+      budget_range: userAnswers[13] || "Consultation"
     };
 
-    emailjs.send('service_7yom6rs', 'template_r1s363j', templateParams, 'T-k-H3YkF8_h2W7tV')
-      .then(() => console.log("Rapport Linkoova envoyé !"))
-      .catch(err => console.error("Erreur EmailJS:", err));
+    emailjs.send('service_7yom6rs', 'template_r1s363j', templateParams)
+      .then((res) => console.log("✅ Rapport envoyé avec succès ! Status:", res.status))
+      .catch((err) => console.error("❌ Échec de l'envoi EmailJS :", err));
   };
 
   const handleLanguage = (l: Language) => {
@@ -133,7 +125,7 @@ const Quote: React.FC = () => {
         }
         return { ...prev, progress: prev.progress + 4 };
       });
-    }, 100);
+    }, 120);
   };
 
   const resetAudit = () => {
@@ -146,26 +138,23 @@ const Quote: React.FC = () => {
 
   return (
     <div className="bg-[#050505] min-h-screen pt-28 pb-20 relative overflow-hidden text-white selection:bg-[#D1A954]/30">
-      
       <div className="absolute top-[-10%] right-[-10%] w-[50%] h-[50%] bg-[#D1A954] rounded-full blur-[150px] opacity-[0.02] pointer-events-none" />
 
       <div className="container mx-auto px-6 relative z-10">
         <div className="max-w-7xl mx-auto">
-          
           <div className="mb-12">
             <h1 className="text-6xl md:text-8xl font-serif italic mb-4">The <span className="text-[#D1A954] not-italic">Audit.</span></h1>
             <p className="text-gray-500 uppercase tracking-[0.3em] text-[10px] font-black italic">Strategic Intelligence Hub</p>
           </div>
 
           <div className="grid lg:grid-cols-12 gap-12 items-start">
-            
             <div className="lg:col-span-4 space-y-6">
               <div className="p-8 rounded-[2rem] bg-white/[0.02] border border-white/10 backdrop-blur-3xl">
                 <h3 className="text-[#D1A954] font-serif text-xl mb-6 italic tracking-wide">Expert Standards</h3>
                 <div className="space-y-4">
                   {[
                     { icon: <UserCheck size={16}/>, title: "Expert Team", desc: "Our senior strategists analyze your business parameters." },
-                    { icon: <Award size={16}/>, title: "Precision Roadmap", desc: "A 360° growth strategy tailored to your market positioning." },
+                    { icon: <Award size={16}/>, title: "Precision Roadmap", desc: "A 360° growth strategy tailored to your market." },
                     { icon: <ShieldCheck size={16}/>, title: "Confidentiality", desc: "Secure data handling within the Linkoova ecosystem." }
                   ].map((item, idx) => (
                     <div key={idx} className="flex gap-4 p-4 rounded-2xl bg-white/[0.01] border border-white/5">
@@ -182,7 +171,6 @@ const Quote: React.FC = () => {
 
             <div className="lg:col-span-8">
               <div className="h-[650px] bg-black border border-white/10 rounded-[2.5rem] overflow-hidden flex flex-col relative shadow-2xl">
-                
                 <div className="absolute top-0 left-0 w-full h-1 bg-white/5 z-20">
                   <motion.div className="h-full bg-[#D1A954]" animate={{ width: `${progress}%` }} />
                 </div>
@@ -226,7 +214,7 @@ const Quote: React.FC = () => {
                     <div className="flex-1 overflow-y-auto p-8 space-y-8 no-scrollbar scroll-smooth">
                       {messages.map((m, i) => (
                         <motion.div key={i} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className={`flex ${m.sender === 'user' ? 'justify-end' : 'justify-start'}`}>
-                          <div className={`p-6 rounded-[2rem] text-[13px] leading-relaxed max-w-[80%] ${m.sender === 'user' ? 'bg-[#D1A954] text-black font-bold shadow-lg shadow-[#D1A954]/10' : 'bg-white/5 border border-white/10'}`}>
+                          <div className={`p-6 rounded-[2rem] text-[13px] leading-relaxed max-w-[80%] ${m.sender === 'user' ? 'bg-[#D1A954] text-black font-bold' : 'bg-white/5 border border-white/10'}`}>
                             {m.text}
                           </div>
                         </motion.div>
