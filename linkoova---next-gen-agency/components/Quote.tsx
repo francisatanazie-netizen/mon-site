@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Send, Bot, CheckCircle, RefreshCcw, ArrowRight, ShieldCheck, Zap, Clock, Globe } from 'lucide-react';
+import { Send, UserCheck, CheckCircle, RefreshCcw, ArrowRight, ShieldCheck, Clock, Globe, Award } from 'lucide-react';
 import emailjs from '@emailjs/browser';
 import { CHAT_FLOW_BILINGUAL, Language } from '../constants/chatData';
 
@@ -22,11 +22,8 @@ const Quote: React.FC = () => {
     }
   }, [messages, isTyping]);
 
-  // --- LOGIQUE EMAILJS AVEC TES IDENTIFIANTS ---
   const sendAuditData = (allMessages: any[]) => {
     const userAnswers = allMessages.filter(m => m.sender === 'user');
-    
-    // Formatage des 15 questions pour l'email
     const auditDataFormatted = userAnswers.map((m, idx) => `Étape ${idx + 1}: ${m.text}`).join('\n');
     const projectName = userAnswers[0]?.text || "Projet Inconnu";
     const userEmail = userAnswers[userAnswers.length - 1]?.text || "Non fourni";
@@ -37,17 +34,14 @@ const Quote: React.FC = () => {
       audit_data: auditDataFormatted,
     };
 
-    // Injection de tes clés EmailJS
-    emailjs.send(
-      'service_7yom6rs',   // Ton Service ID
-      'template_r1s363j',  // Ton Template ID
-      templateParams, 
-      'T-k-H3YkF8_h2W7tV'   // Ta Public Key
-    ).then(() => {
-      console.log("Audit Linkoova envoyé avec succès !");
-    }).catch(err => {
-      console.error("Erreur d'envoi EmailJS:", err);
-    });
+    emailjs.send('service_7yom6rs', 'template_r1s363j', templateParams, 'T-k-H3YkF8_h2W7tV');
+  };
+
+  // --- FIX DU BUG DE CLIC LANGUE ---
+  const handleLanguage = (l: Language) => {
+    setLang(l);
+    setMessages([{ id: 'start', sender: 'bot', text: CHAT_FLOW_BILINGUAL[l].start.text }]);
+    // On ne reste pas bloqué, on passe à l'option de départ
   };
 
   const processNext = (step: string) => {
@@ -56,7 +50,7 @@ const Quote: React.FC = () => {
     setProgress((stepNum / 15) * 100);
 
     if (step === 'loading') {
-      sendAuditData(messages); // Envoi déclenché ici
+      sendAuditData(messages);
       return startLoading();
     }
 
@@ -66,7 +60,7 @@ const Quote: React.FC = () => {
       setMessages(prev => [...prev, { id: step, sender: 'bot', text: data.text }]);
       setCurrentStep(step);
       setIsTyping(false);
-    }, 800);
+    }, 600);
   };
 
   const onOption = (opt: any) => {
@@ -89,10 +83,7 @@ const Quote: React.FC = () => {
       setLoading(prev => {
         if (prev.progress >= 100) {
           clearInterval(interval);
-          setTimeout(() => { 
-            setSuccess(true); 
-            setLoading({ active: false, progress: 100 }); 
-          }, 600);
+          setTimeout(() => { setSuccess(true); setLoading({ active: false, progress: 100 }); }, 500);
           return { ...prev, progress: 100 };
         }
         return { ...prev, progress: prev.progress + 4 };
@@ -100,37 +91,42 @@ const Quote: React.FC = () => {
     }, 100);
   };
 
-  return (
-    <div className="bg-[#050505] min-h-screen pt-28 pb-20 relative overflow-hidden text-white selection:bg-[#D1A954]/30">
-      
-      {/* Background Glow */}
-      <div className="absolute top-[-5%] left-[-5%] w-[40%] h-[40%] bg-[#D1A954] rounded-full blur-[120px] opacity-10 pointer-events-none" />
+  // --- FIX DU REFRESH 404 ---
+  const resetAudit = () => {
+    setLang(null);
+    setCurrentStep('start');
+    setMessages([{ id: 'init', sender: 'bot', text: "Welcome to Linkoova. / Bienvenue chez Linkoova." }]);
+    setProgress(0);
+    setSuccess(false);
+  };
 
+  return (
+    <div className="bg-[#050505] min-h-screen pt-28 pb-20 relative overflow-hidden text-white">
       <div className="container mx-auto px-6 relative z-10">
         <div className="max-w-7xl mx-auto">
           
           <div className="mb-12">
             <h1 className="text-6xl md:text-8xl font-serif italic mb-4">The <span className="text-[#D1A954] not-italic">Audit.</span></h1>
-            <p className="text-gray-500 uppercase tracking-[0.3em] text-[10px] font-black italic">Strategic Intelligence by Linkoova</p>
+            <p className="text-gray-500 uppercase tracking-[0.3em] text-[10px] font-black italic">Bespoke Strategy & Human Expertise</p>
           </div>
 
           <div className="grid lg:grid-cols-12 gap-12 items-start">
             
-            {/* SIDEBAR AVEC TES CARTES */}
+            {/* SIDEBAR - ASPECT HUMAIN & EXPERTISE */}
             <div className="lg:col-span-4 space-y-6">
               <div className="p-8 rounded-[2rem] bg-white/[0.02] border border-white/10 backdrop-blur-3xl">
-                <h3 className="text-[#D1A954] font-serif text-xl mb-6 italic tracking-wide">Strategic Insights</h3>
+                <h3 className="text-[#D1A954] font-serif text-xl mb-6 italic tracking-wide">Linkoova Standards</h3>
                 <div className="space-y-4">
                   {[
-                    { icon: <Clock size={16}/>, title: "3 Minute Quote", desc: "Processus optimisé pour votre temps." },
-                    { icon: <ShieldCheck size={16}/>, title: "No Card Required", desc: "Audit stratégique gratuit sans engagement." },
-                    { icon: <Zap size={16}/>, title: "AI Analysis", desc: "Analyse hybride de votre vision business." }
+                    { icon: <UserCheck size={16}/>, title: "Human-Led Analysis", desc: "Chaque projet est audité par nos experts seniors." },
+                    { icon: <Award size={16}/>, title: "High-End Quality", desc: "Une roadmap 360° conçue pour l'excellence." },
+                    { icon: <ShieldCheck size={16}/>, title: "Zero Commitment", desc: "Une étude stratégique offerte pour valider votre vision." }
                   ].map((item, idx) => (
-                    <div key={idx} className="flex gap-4 p-4 rounded-2xl bg-white/[0.02] border border-white/5">
+                    <div key={idx} className="flex gap-4 p-4 rounded-2xl bg-white/[0.01] border border-white/5">
                       <div className="text-[#D1A954] mt-1">{item.icon}</div>
                       <div>
                         <p className="text-[10px] font-black uppercase tracking-widest mb-1">{item.title}</p>
-                        <p className="text-[11px] text-gray-400 leading-tight">{item.desc}</p>
+                        <p className="text-[11px] text-gray-500 leading-tight">{item.desc}</p>
                       </div>
                     </div>
                   ))}
@@ -140,21 +136,19 @@ const Quote: React.FC = () => {
 
             {/* CHAT BOX */}
             <div className="lg:col-span-8">
-              <div className="h-[650px] bg-black border border-white/10 rounded-[3rem] overflow-hidden flex flex-col shadow-2xl relative backdrop-blur-md">
-                
-                {/* PROGRESS LINE */}
+              <div className="h-[650px] bg-black border border-white/10 rounded-[2.5rem] overflow-hidden flex flex-col shadow-2xl relative">
                 <div className="absolute top-0 left-0 w-full h-1 bg-white/5 z-20">
                   <motion.div className="h-full bg-[#D1A954]" animate={{ width: `${progress}%` }} />
                 </div>
 
                 <AnimatePresence>
                   {loading.active && (
-                    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="absolute inset-0 z-50 flex flex-col items-center justify-center bg-black/95">
+                    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="absolute inset-0 z-50 flex flex-col items-center justify-center bg-black/95 backdrop-blur-xl">
                       <div className="w-20 h-20 border-2 border-white/5 rounded-full flex items-center justify-center mb-6">
                         <motion.div animate={{ rotate: 360 }} transition={{ repeat: Infinity, duration: 1 }} className="absolute inset-0 border-t-2 border-[#D1A954] rounded-full" />
                         <span className="text-[#D1A954] font-serif">{loading.progress}%</span>
                       </div>
-                      <p className="text-[10px] uppercase tracking-[0.4em] text-[#D1A954] animate-pulse font-black">Computing Roadmap</p>
+                      <p className="text-[10px] uppercase tracking-[0.4em] text-[#D1A954] animate-pulse font-black">Finalizing Strategic Data</p>
                     </motion.div>
                   )}
                 </AnimatePresence>
@@ -168,18 +162,18 @@ const Quote: React.FC = () => {
                         ? "Nos analystes traitent votre projet. Vous recevrez votre roadmap 360° sous peu." 
                         : "Our analysts are processing your project. You will receive the 360° roadmap shortly."}
                     </p>
-                    <button onClick={() => window.location.href = '/'} className="bg-white text-black px-10 py-5 rounded-full font-black text-[10px] uppercase tracking-widest flex items-center gap-3 hover:bg-[#D1A954] transition-all group">
-                      Back to Vision <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform"/>
-                    </button>
+                    <button onClick={() => window.location.href = '/'} className="bg-white text-black px-10 py-5 rounded-full font-black text-[10px] uppercase tracking-widest flex items-center gap-3 hover:bg-[#D1A954] transition-all">Back to Vision <ArrowRight size={14}/></button>
                   </motion.div>
                 ) : (
                   <>
-                    <div className="p-8 border-b border-white/5 flex items-center justify-between bg-white/[0.01]">
+                    <div className="p-8 border-b border-white/5 flex items-center justify-between">
                       <div className="flex items-center gap-4">
-                        <div className="w-12 h-12 rounded-2xl bg-[#D1A954] flex items-center justify-center text-black shadow-lg"><Bot size={24}/></div>
-                        <p className="text-xs font-bold uppercase tracking-widest">Linkoova Hub</p>
+                        <div className="w-12 h-12 rounded-2xl bg-[#D1A954] flex items-center justify-center text-black shadow-lg">
+                           <UserCheck size={24}/>
+                        </div>
+                        <p className="text-xs font-bold uppercase tracking-widest">Linkoova Expert Hub</p>
                       </div>
-                      <RefreshCcw size={16} className="text-gray-600 hover:text-white cursor-pointer transition-all" onClick={() => window.location.reload()} />
+                      <RefreshCcw size={16} className="text-gray-600 hover:text-white cursor-pointer" onClick={resetAudit} />
                     </div>
 
                     <div className="flex-1 overflow-y-auto p-8 space-y-8 no-scrollbar scroll-smooth">
@@ -194,11 +188,11 @@ const Quote: React.FC = () => {
                       <div ref={chatEndRef} />
                     </div>
 
-                    <div className="p-8 bg-white/[0.02] border-t border-white/5 backdrop-blur-xl">
+                    <div className="p-8 bg-white/[0.01] border-t border-white/5 backdrop-blur-xl">
                       {!lang ? (
                         <div className="grid grid-cols-2 gap-4">
-                          <button onClick={() => handleLanguage('EN')} className="py-5 border border-white/10 rounded-2xl font-black uppercase text-[10px] tracking-[0.2em] hover:bg-white hover:text-black transition-all">English</button>
-                          <button onClick={() => handleLanguage('FR')} className="py-5 border border-white/10 rounded-2xl font-black uppercase text-[10px] tracking-[0.2em] hover:bg-white hover:text-black transition-all">Français</button>
+                          <button onClick={() => handleLanguage('EN')} className="py-5 border border-white/10 rounded-2xl font-black uppercase text-[10px] hover:bg-white hover:text-black transition-all">English</button>
+                          <button onClick={() => handleLanguage('FR')} className="py-5 border border-white/10 rounded-2xl font-black uppercase text-[10px] hover:bg-white hover:text-black transition-all">Français</button>
                         </div>
                       ) : (
                         <form onSubmit={onInput} className="flex flex-col gap-4">
@@ -213,7 +207,7 @@ const Quote: React.FC = () => {
                           ) : (
                             <div className="flex gap-4">
                               <input type="text" value={inputValue} onChange={e => setInputValue(e.target.value)} placeholder="..." className="flex-1 bg-white/5 border border-white/10 rounded-2xl px-6 py-5 text-sm focus:outline-none focus:border-[#D1A954]" />
-                              <button type="submit" className="bg-[#D1A954] text-black p-5 rounded-2xl hover:scale-105 transition-all shadow-lg shadow-[#D1A954]/20"><Send size={20}/></button>
+                              <button type="submit" className="bg-[#D1A954] text-black p-5 rounded-2xl hover:scale-105 transition-all"><Send size={20}/></button>
                             </div>
                           )}
                         </form>
