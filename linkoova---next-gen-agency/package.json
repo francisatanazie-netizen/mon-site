@@ -17,10 +17,12 @@
     "i18next": "^23.11.5",
     "react-i18next": "^14.1.2",
     "i18next-browser-languagedetector": "^7.2.1",
-    "react-router-dom": "^6.25.0"
+    "react-router-dom": "^6.25.0",
+    "@emailjs/browser": "^4.4.1"
   },
   "devDependencies": {
     "@types/node": "^22.14.0",
+    "@types/three": "^0.160.0",
     "@vitejs/plugin-react": "^5.0.0",
     "typescript": "~5.8.2",
     "vite": "^6.2.0"
