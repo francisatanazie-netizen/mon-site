@@ -4,7 +4,7 @@ import { Send, UserCheck, CheckCircle, RefreshCcw, ArrowRight, ShieldCheck, Awar
 import emailjs from '@emailjs/browser';
 import { CHAT_FLOW_BILINGUAL, Language } from '../constants/chatData';
 
-// INITIALISATION AVEC TA CLÉ PUBLIQUE
+// INITIALISATION
 emailjs.init("_sHyfwIAzyg5Krf5j");
 
 const Quote: React.FC = () => {
@@ -26,27 +26,39 @@ const Quote: React.FC = () => {
   }, [messages, isTyping]);
 
   const sendAuditData = (allMessages: any[]) => {
+    // On extrait uniquement les réponses texte de l'utilisateur
     const userAnswers = allMessages
       .filter(m => m.sender === 'user')
       .map(m => m.text);
 
-    // Préparation des paramètres pour ton Template EmailJS
+    console.log("Transmission des données stratégiques...", userAnswers);
+
     const templateParams = {
-      company_name: userAnswers[0] || "Client",
-      user_email: userAnswers[userAnswers.length - 1] || "Non spécifié",
-      budget: userAnswers[13] || "TBD",
-      vision_goal: userAnswers[2] || "N/A",
-      // Ces noms doivent être les mêmes que dans ton template EmailJS {{...}}
+      // Données de l'audit (Mapping basé sur tes 15 questions)
+      company_name: userAnswers[0] || "N/A",
+      q2_refonte: userAnswers[1] || "N/A",
+      q3_support: userAnswers[2] || "N/A",
+      q4_audience: userAnswers[3] || "N/A",
+      q5_geographie: userAnswers[4] || "N/A",
+      q6_identite: userAnswers[5] || "N/A",
+      q7_emotion: userAnswers[6] || "N/A",
+      q8_feature: userAnswers[7] || "N/A",
+      q9_integration: userAnswers[8] || "N/A",
+      q10_maintenance: userAnswers[9] || "N/A",
+      q11_defi: userAnswers[10] || "N/A",
+      q12_budget: userAnswers[11] || "N/A",
+      q13_delai: userAnswers[12] || "N/A",
+      q14_source: userAnswers[13] || "N/A",
+      user_email: userAnswers[userAnswers.length - 1] || "N/A",
+      
+      // Paramètres de style pour l'email
+      report_title: lang === 'FR' ? "RAPPORT D'AUDIT STRATÉGIQUE" : "STRATEGIC AUDIT REPORT",
+      header_tag: "LINKOOVA INTELLIGENCE"
     };
 
-    // UTILISATION DE TON SERVICE_ID ET TEMPLATE_ID
     emailjs.send('service_94yaj7r', 'template_c1xbsvk', templateParams)
-      .then((res) => {
-        console.log("✅ RAPPORT ENVOYÉ !", res.status);
-      })
-      .catch((err) => {
-        console.error("❌ ERREUR CRITIQUE EMAILJS :", err);
-      });
+      .then((res) => console.log("✅ Rapport EmailJS Envoyé", res.status))
+      .catch((err) => console.error("❌ Erreur EmailJS", err));
   };
 
   const handleLanguage = (l: Language) => {
@@ -57,6 +69,8 @@ const Quote: React.FC = () => {
 
   const processNext = (step: string) => {
     if (!lang) return;
+    
+    // Calcul de la progression (sur 15 questions)
     const stepNum = step.match(/\d+/) ? parseInt(step.match(/\d+/)![0]) : 0;
     setProgress((stepNum / 15) * 100);
 
@@ -96,7 +110,7 @@ const Quote: React.FC = () => {
       setLoading(prev => {
         if (prev.progress >= 100) {
           clearInterval(interval);
-          setTimeout(() => { setSuccess(true); setLoading({ active: false, progress: 100 }); }, 600);
+          setTimeout(() => { setSuccess(true); setLoading({ active: false, progress: 100 }); }, 800);
           return { ...prev, progress: 100 };
         }
         return { ...prev, progress: prev.progress + 5 };
@@ -113,75 +127,141 @@ const Quote: React.FC = () => {
   };
 
   return (
-    <div className="bg-[#050505] min-h-screen pt-28 pb-20 relative text-white">
-      <div className="container mx-auto px-6">
+    <div className="bg-[#050505] min-h-screen pt-28 pb-20 relative overflow-hidden text-white selection:bg-[#D1A954]/30">
+      {/* Background Glows */}
+      <div className="absolute top-[-10%] right-[-10%] w-[50%] h-[50%] bg-[#D1A954] rounded-full blur-[150px] opacity-[0.03] pointer-events-none" />
+      <div className="absolute bottom-[-10%] left-[-10%] w-[40%] h-[40%] bg-[#D1A954] rounded-full blur-[150px] opacity-[0.02] pointer-events-none" />
+
+      <div className="container mx-auto px-6 relative z-10">
         <div className="max-w-7xl mx-auto">
-          <h1 className="text-6xl font-serif italic mb-12">The <span className="text-[#D1A954] not-italic">Audit.</span></h1>
           
-          <div className="grid lg:grid-cols-12 gap-12">
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="mb-12">
+            <h1 className="text-6xl md:text-8xl font-serif italic mb-4">The <span className="text-[#D1A954] not-italic">Audit.</span></h1>
+            <p className="text-gray-500 uppercase tracking-[0.3em] text-[10px] font-black italic">Strategic Intelligence Hub</p>
+          </motion.div>
+
+          <div className="grid lg:grid-cols-12 gap-12 items-start">
+            
+            {/* Sidebar avec Expert Standards */}
             <div className="lg:col-span-4 space-y-6">
-              <div className="p-8 rounded-[2rem] bg-white/5 border border-white/10">
-                <p className="text-[#D1A954] font-black uppercase text-[10px] tracking-widest mb-4">Security Protocol</p>
-                <p className="text-gray-400 text-xs leading-relaxed">Your data is encrypted and sent directly to our strategic team.</p>
+              <div className="p-8 rounded-[2.5rem] bg-white/[0.02] border border-white/10 backdrop-blur-3xl shadow-2xl">
+                <h3 className="text-[#D1A954] font-serif text-xl mb-6 italic tracking-wide">Expert Standards</h3>
+                <div className="space-y-4">
+                  {[
+                    { icon: <UserCheck size={18}/>, title: "Senior Strategists", desc: "Expert analysis of your market position." },
+                    { icon: <Award size={18}/>, title: "Precision Roadmap", desc: "Tailored growth and tech strategy." },
+                    { icon: <ShieldCheck size={18}/>, title: "Data Security", desc: "Confidential handling of your vision." }
+                  ].map((item, idx) => (
+                    <div key={idx} className="flex gap-4 p-5 rounded-3xl bg-white/[0.01] border border-white/5 hover:border-[#D1A954]/30 transition-all group">
+                      <div className="text-[#D1A954] mt-1 group-hover:scale-110 transition-transform">{item.icon}</div>
+                      <div>
+                        <p className="text-[10px] font-black uppercase tracking-widest mb-1">{item.title}</p>
+                        <p className="text-[11px] text-gray-500 leading-tight">{item.desc}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
               </div>
             </div>
 
+            {/* Chat Experience Principal */}
             <div className="lg:col-span-8">
-              <div className="h-[600px] bg-black border border-white/10 rounded-[2.5rem] overflow-hidden flex flex-col relative">
-                <div className="absolute top-0 left-0 w-full h-1 bg-white/5">
-                  <motion.div className="h-full bg-[#D1A954]" animate={{ width: `${progress}%` }} />
+              <div className="h-[700px] bg-black border border-white/10 rounded-[3rem] overflow-hidden flex flex-col relative shadow-[0_0_50px_rgba(0,0,0,0.5)]">
+                
+                {/* Progress Bar Top */}
+                <div className="absolute top-0 left-0 w-full h-1.5 bg-white/5 z-20">
+                  <motion.div className="h-full bg-[#D1A954] shadow-[0_0_15px_#D1A954]" animate={{ width: `${progress}%` }} />
                 </div>
 
                 <AnimatePresence>
                   {loading.active && (
-                    <div className="absolute inset-0 z-50 flex flex-col items-center justify-center bg-black/90">
-                      <motion.div animate={{ rotate: 360 }} transition={{ repeat: Infinity, duration: 1 }} className="w-12 h-12 border-t-2 border-[#D1A954] rounded-full mb-4" />
-                      <p className="text-[10px] text-[#D1A954] tracking-widest font-black uppercase">Transmitting Data...</p>
-                    </div>
+                    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="absolute inset-0 z-50 flex flex-col items-center justify-center bg-black/95 backdrop-blur-xl">
+                      <div className="w-24 h-24 border-2 border-white/5 rounded-full flex items-center justify-center mb-8 relative">
+                        <motion.div animate={{ rotate: 360 }} transition={{ repeat: Infinity, duration: 1.5, ease: "linear" }} className="absolute inset-[-4px] border-t-2 border-[#D1A954] rounded-full" />
+                        <span className="text-[#D1A954] font-serif text-2xl font-light">{loading.progress}%</span>
+                      </div>
+                      <p className="text-[10px] uppercase tracking-[0.5em] text-[#D1A954] animate-pulse font-black">Syncing Strategic Data</p>
+                    </motion.div>
                   )}
                 </AnimatePresence>
 
                 {success ? (
-                  <div className="flex-1 flex flex-col items-center justify-center p-12 text-center">
-                    <CheckCircle size={60} className="text-[#D1A954] mb-6"/>
-                    <h2 className="text-4xl font-serif mb-4">Audit Complete.</h2>
-                    <p className="text-gray-400 text-sm mb-8">We will contact you shortly.</p>
-                    <button onClick={() => window.location.href = '/'} className="bg-white text-black px-8 py-4 rounded-full text-[10px] font-black uppercase">Close</button>
-                  </div>
+                  <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="flex-1 flex flex-col items-center justify-center p-12 text-center">
+                    <div className="w-24 h-24 bg-[#D1A954] rounded-full flex items-center justify-center mb-8 shadow-2xl shadow-[#D1A954]/20">
+                      <CheckCircle size={40} className="text-black"/>
+                    </div>
+                    <h2 className="text-5xl font-serif mb-6 italic">Data <span className="text-[#D1A954] not-italic">Received.</span></h2>
+                    <p className="text-gray-400 mb-10 max-w-sm mx-auto text-sm leading-relaxed">
+                      {lang === 'FR' 
+                        ? "Votre audit est en cours d'analyse. Vous recevrez une réponse sous 24h." 
+                        : "Our team is analyzing your audit. You will receive a response within 24h."}
+                    </p>
+                    <button onClick={() => window.location.href = '/'} className="bg-white text-black px-10 py-5 rounded-full font-black text-[10px] uppercase tracking-widest flex items-center gap-3 hover:bg-[#D1A954] transition-all">
+                      Return Home <ArrowRight size={14}/>
+                    </button>
+                  </motion.div>
                 ) : (
                   <>
-                    <div className="flex-1 overflow-y-auto p-8 space-y-6">
+                    <div className="p-8 border-b border-white/5 flex items-center justify-between bg-white/[0.01] backdrop-blur-md">
+                      <div className="flex items-center gap-5">
+                        <div className="w-14 h-14 rounded-2xl bg-[#D1A954] flex items-center justify-center text-black shadow-xl shadow-[#D1A954]/10">
+                          <UserCheck size={28}/>
+                        </div>
+                        <div>
+                          <p className="text-xs font-bold uppercase tracking-[0.2em]">Linkoova Intelligence</p>
+                          <p className="text-[9px] text-green-500 uppercase tracking-widest font-black flex items-center gap-1.5">
+                            <span className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse"/> Encryption Active
+                          </p>
+                        </div>
+                      </div>
+                      <RefreshCcw size={18} className="text-gray-600 hover:text-white cursor-pointer transition-all hover:rotate-180" onClick={resetAudit} />
+                    </div>
+
+                    <div className="flex-1 overflow-y-auto p-10 space-y-8 no-scrollbar scroll-smooth">
                       {messages.map((m, i) => (
-                        <div key={i} className={`flex ${m.sender === 'user' ? 'justify-end' : 'justify-start'}`}>
-                          <div className={`p-5 rounded-2xl text-xs max-w-[80%] ${m.sender === 'user' ? 'bg-[#D1A954] text-black font-bold' : 'bg-white/5 border border-white/10'}`}>
+                        <motion.div key={i} initial={{ opacity: 0, x: m.sender === 'user' ? 20 : -20 }} animate={{ opacity: 1, x: 0 }} className={`flex ${m.sender === 'user' ? 'justify-end' : 'justify-start'}`}>
+                          <div className={`p-6 rounded-[2rem] text-[13px] leading-relaxed max-w-[85%] shadow-sm ${
+                            m.sender === 'user' 
+                            ? 'bg-[#D1A954] text-black font-bold rounded-tr-none' 
+                            : 'bg-white/[0.03] border border-white/10 rounded-tl-none'
+                          }`}>
                             {m.text}
                           </div>
-                        </div>
+                        </motion.div>
                       ))}
+                      {isTyping && (
+                        <div className="flex gap-2 p-4 opacity-40">
+                          <span className="w-1.5 h-1.5 bg-[#D1A954] rounded-full animate-bounce"/>
+                          <span className="w-1.5 h-1.5 bg-[#D1A954] rounded-full animate-bounce [animation-delay:0.2s]"/>
+                          <span className="w-1.5 h-1.5 bg-[#D1A954] rounded-full animate-bounce [animation-delay:0.4s]"/>
+                        </div>
+                      )}
                       <div ref={chatEndRef} />
                     </div>
 
-                    <div className="p-6 border-t border-white/5">
+                    <div className="p-8 bg-black/50 border-t border-white/5 backdrop-blur-3xl">
                       {!lang ? (
                         <div className="grid grid-cols-2 gap-4">
-                          <button onClick={() => handleLanguage('EN')} className="py-4 border border-white/10 rounded-xl text-[10px] uppercase font-black tracking-widest hover:bg-white hover:text-black">English</button>
-                          <button onClick={() => handleLanguage('FR')} className="py-4 border border-white/10 rounded-xl text-[10px] uppercase font-black tracking-widest hover:bg-white hover:text-black">Français</button>
+                          <button onClick={() => handleLanguage('EN')} className="py-6 border border-white/10 rounded-2xl font-black uppercase text-[10px] tracking-widest hover:bg-white hover:text-black transition-all">English</button>
+                          <button onClick={() => handleLanguage('FR')} className="py-6 border border-white/10 rounded-2xl font-black uppercase text-[10px] tracking-widest hover:bg-white hover:text-black transition-all">Français</button>
                         </div>
                       ) : (
-                        <form onSubmit={onInput} className="flex gap-4">
-                          {CHAT_FLOW_BILINGUAL[lang][currentStep]?.options ? (
+                        <form onSubmit={onInput} className="flex flex-col gap-4">
+                          {CHAT_FLOW_BILINGUAL[lang][currentStep]?.options && !isTyping ? (
                             <div className="flex flex-wrap gap-2">
-                              {CHAT_FLOW_BILINGUAL[lang][currentStep].options.map((o: any) => (
-                                <button key={o.value} type="button" onClick={() => onOption(o)} className="px-4 py-2 border border-white/10 rounded-full text-[10px] uppercase font-black hover:border-[#D1A954]">
+                              {CHAT_FLOW_BILINGUAL[lang][currentStep].options?.map((o: any) => (
+                                <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} key={o.value} type="button" onClick={() => onOption(o)} className="px-6 py-4 border border-white/10 rounded-full text-[10px] font-black uppercase tracking-widest hover:border-[#D1A954] hover:text-[#D1A954] bg-white/[0.02] transition-all">
                                   {o.label}
-                                </button>
+                                </motion.button>
                               ))}
                             </div>
                           ) : (
-                            <>
-                              <input type="text" value={inputValue} onChange={e => setInputValue(e.target.value)} className="flex-1 bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-[#D1A954]" placeholder="..." />
-                              <button type="submit" className="bg-[#D1A954] text-black p-3 rounded-xl"><Send size={18}/></button>
-                            </>
+                            <div className="flex gap-4">
+                              <input type="text" autoFocus value={inputValue} onChange={e => setInputValue(e.target.value)} placeholder="..." className="flex-1 bg-white/[0.03] border border-white/10 rounded-2xl px-6 py-5 text-sm focus:outline-none focus:border-[#D1A954] transition-all placeholder:text-gray-700" />
+                              <button type="submit" className="bg-[#D1A954] text-black px-8 rounded-2xl hover:scale-105 transition-all shadow-xl shadow-[#D1A954]/20">
+                                <Send size={20}/>
+                              </button>
+                            </div>
                           )}
                         </form>
                       )}
