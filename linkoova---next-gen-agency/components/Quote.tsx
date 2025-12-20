@@ -4,7 +4,7 @@ import { Send, UserCheck, CheckCircle, RefreshCcw, ArrowRight, ShieldCheck, Awar
 import emailjs from '@emailjs/browser';
 import { CHAT_FLOW_BILINGUAL, Language } from '../constants/chatData';
 
-// INITIALISATION AVEC TES CLÉS
+// INITIALISATION
 emailjs.init("_sHyfwIAzyg5Krf5j");
 
 const Quote: React.FC = () => {
@@ -26,41 +26,43 @@ const Quote: React.FC = () => {
   }, [messages, isTyping]);
 
   const sendAuditData = (allMessages: any[]) => {
+    // Nettoyage des réponses (on enlève les clics "Start")
     const userAnswers = allMessages
-      .filter(m => m.sender === 'user')
+      .filter(m => m.sender === 'user' && !m.text.toLowerCase().includes('audit') && !m.text.toLowerCase().includes('lancer'))
       .map(m => m.text);
 
     const templateParams = {
-      // 1. En-têtes (Headers)
-      header_tag: "LINKOOVA STRATEGIC HUB",
-      report_title: lang === 'FR' ? "RAPPORT D'AUDIT STRATÉGIQUE" : "STRATEGIC AUDIT REPORT",
-      
-      // 2. Libellés des sections (Labels)
-      label_identity: "01. IDENTITY & VISION",
-      label_market: "02. MARKET ANALYSIS",
-      label_audience: "03. TARGETING",
-      label_analysis: "04. SPECIFICATIONS",
-      label_acquisition: "05. BUSINESS STRATEGY",
-      label_specs: "06. FINAL DATA",
+      // EN-TÊTES
+      header_tag: "INTELLIGENCE STRATÉGIQUE",
+      report_title: lang === 'FR' ? "RAPPORT D'AUDIT COMPLET" : "COMPLETE AUDIT REPORT",
+      confidential_text: "DOCUMENT CONFIDENTIEL - LINKOOVA",
 
-      // 3. Libellés des questions (Prefixes)
-      q1_label: "Project Name: ",
-      q2_label: "Status: ",
-      q3_label: "Platform: ",
-      q4_label: "Target: ",
-      q5_label: "Geographic: ",
-      q6_label: "Visual ID: ",
-      q7_label: "Brand Vibe: ",
-      q8_label: "Core Feature: ",
-      q9_label: "Integrations: ",
-      q10_label: "Management: ",
-      q11_label: "Challenge: ",
-      q12_label: "Budget: ",
-      q13_label: "Timeline: ",
-      q14_label: "Discovery: ",
-      q15_label: "Client Email: ",
+      // LABELS DES SECTIONS (01 à 06)
+      label_identity: "IDENTITÉ & VISION",
+      label_market: "ANALYSE DU MARCHÉ",
+      label_audience: "CIBLAGE & AUDIENCE",
+      label_analysis: "SPÉCIFICATIONS TECHNIQUES",
+      label_acquisition: "STRATÉGIE BUSINESS",
+      label_specs: "DONNÉES FINALES",
 
-      // 4. MAPPING DES RÉPONSES (Connecté à ton Template ID: template_c1xbsvk)
+      // LABELS DES QUESTIONS
+      q1_label: "Nom du Projet",
+      q2_label: "Type de Projet",
+      q3_label: "Support Choisi",
+      q4_label: "Public Cible",
+      q5_label: "Portée Géo",
+      q6_label: "Zones Visées",
+      q7_label: "Identité Visuelle",
+      q8_label: "Inspiration",
+      q9_label: "Émotion de Marque",
+      q10_label: "Fonction Clé",
+      q11_label: "Intégrations",
+      q12_label: "Maintenance",
+      q13_label: "Défi Majeur",
+      q14_label: "Budget Estimé",
+      q15_label: "Contact Email",
+
+      // RÉPONSES UTILISATEUR (Alignées sur ton design)
       company_name: userAnswers[0] || "N/A",
       industry: userAnswers[1] || "N/A",
       vision_goal: userAnswers[2] || "N/A",
@@ -79,7 +81,7 @@ const Quote: React.FC = () => {
     };
 
     emailjs.send('service_94yaj7r', 'template_c1xbsvk', templateParams)
-      .then((res) => console.log("✅ Audit envoyé !", res.status))
+      .then((res) => console.log("✅ Audit aligné envoyé !"))
       .catch((err) => console.error("❌ Erreur EmailJS", err));
   };
 
@@ -148,19 +150,19 @@ const Quote: React.FC = () => {
 
   return (
     <div className="bg-[#050505] min-h-screen pt-28 pb-20 relative overflow-hidden text-white">
-      {/* Background Aesthetic */}
+      {/* Background FX */}
       <div className="absolute top-[-10%] right-[-10%] w-[50%] h-[50%] bg-[#D1A954] rounded-full blur-[150px] opacity-[0.03] pointer-events-none" />
       <div className="absolute bottom-[-10%] left-[-10%] w-[40%] h-[40%] bg-[#D1A954] rounded-full blur-[150px] opacity-[0.02] pointer-events-none" />
 
       <div className="container mx-auto px-6 relative z-10">
         <div className="max-w-7xl mx-auto">
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="mb-12">
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="mb-12 text-left">
             <h1 className="text-6xl md:text-8xl font-serif italic mb-4">The <span className="text-[#D1A954] not-italic">Audit.</span></h1>
             <p className="text-gray-500 uppercase tracking-[0.3em] text-[10px] font-black italic">Strategic Intelligence Hub</p>
           </motion.div>
 
           <div className="grid lg:grid-cols-12 gap-12">
-            {/* Sidebar */}
+            {/* Sidebar info */}
             <div className="lg:col-span-4 space-y-6">
               <div className="p-8 rounded-[2.5rem] bg-white/[0.02] border border-white/10 backdrop-blur-3xl shadow-2xl">
                 <h3 className="text-[#D1A954] font-serif text-xl mb-6 italic tracking-wide">Expert Standards</h3>
@@ -170,7 +172,7 @@ const Quote: React.FC = () => {
                     { icon: <Award size={18}/>, title: "Precision Roadmap", desc: "Tailored growth and tech strategy." },
                     { icon: <ShieldCheck size={18}/>, title: "Data Security", desc: "Confidential handling of your vision." }
                   ].map((item, idx) => (
-                    <div key={idx} className="flex gap-4 p-5 rounded-3xl bg-white/[0.01] border border-white/5 transition-all group hover:border-[#D1A954]/30">
+                    <div key={idx} className="flex gap-4 p-5 rounded-3xl bg-white/[0.01] border border-white/5 group hover:border-[#D1A954]/30 transition-all">
                       <div className="text-[#D1A954] mt-1 group-hover:scale-110 transition-transform">{item.icon}</div>
                       <div>
                         <p className="text-[10px] font-black uppercase tracking-widest mb-1">{item.title}</p>
@@ -184,9 +186,9 @@ const Quote: React.FC = () => {
 
             {/* Chat Experience */}
             <div className="lg:col-span-8">
-              <div className="h-[700px] bg-black border border-white/10 rounded-[3rem] overflow-hidden flex flex-col relative shadow-[0_0_50px_rgba(0,0,0,0.5)]">
+              <div className="h-[700px] bg-black border border-white/10 rounded-[3rem] overflow-hidden flex flex-col relative shadow-2xl shadow-black/50">
                 
-                {/* Progress Bar */}
+                {/* Progress bar top */}
                 <div className="absolute top-0 left-0 w-full h-1.5 bg-white/5 z-20">
                   <motion.div className="h-full bg-[#D1A954] shadow-[0_0_15px_#D1A954]" animate={{ width: `${progress}%` }} />
                 </div>
@@ -207,12 +209,8 @@ const Quote: React.FC = () => {
                   <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="flex-1 flex flex-col items-center justify-center p-12 text-center">
                     <CheckCircle size={60} className="text-[#D1A954] mb-8 shadow-2xl shadow-[#D1A954]/20"/>
                     <h2 className="text-5xl font-serif mb-6 italic">Data <span className="text-[#D1A954] not-italic">Received.</span></h2>
-                    <p className="text-gray-400 mb-10 max-w-sm mx-auto text-sm leading-relaxed">
-                      Your audit is being analyzed. You will receive a response within 24h.
-                    </p>
-                    <button onClick={() => window.location.href = '/'} className="bg-white text-black px-10 py-5 rounded-full font-black text-[10px] uppercase tracking-widest flex items-center gap-3 hover:bg-[#D1A954] transition-all">
-                      Return Home <ArrowRight size={14}/>
-                    </button>
+                    <p className="text-gray-400 mb-10 max-w-sm mx-auto text-sm leading-relaxed">Your audit is being analyzed. You will receive a response within 24h.</p>
+                    <button onClick={() => window.location.href = '/'} className="bg-white text-black px-10 py-5 rounded-full font-black text-[10px] uppercase tracking-widest flex items-center gap-3 hover:bg-[#D1A954] transition-all">Return Home <ArrowRight size={14}/></button>
                   </motion.div>
                 ) : (
                   <>
@@ -223,9 +221,7 @@ const Quote: React.FC = () => {
                         </div>
                         <div>
                           <p className="text-xs font-bold uppercase tracking-[0.2em]">Linkoova Intelligence</p>
-                          <p className="text-[9px] text-green-500 uppercase tracking-widest font-black flex items-center gap-1.5">
-                            <span className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse"/> Encryption Active
-                          </p>
+                          <p className="text-[9px] text-green-500 uppercase tracking-widest font-black flex items-center gap-1.5"><span className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse"/> Encryption Active</p>
                         </div>
                       </div>
                       <RefreshCcw size={18} className="text-gray-600 hover:text-white cursor-pointer transition-all hover:rotate-180" onClick={resetAudit} />
@@ -234,9 +230,7 @@ const Quote: React.FC = () => {
                     <div className="flex-1 overflow-y-auto p-10 space-y-8 no-scrollbar scroll-smooth">
                       {messages.map((m, i) => (
                         <motion.div key={i} initial={{ opacity: 0, x: m.sender === 'user' ? 20 : -20 }} animate={{ opacity: 1, x: 0 }} className={`flex ${m.sender === 'user' ? 'justify-end' : 'justify-start'}`}>
-                          <div className={`p-6 rounded-[2rem] text-[13px] leading-relaxed max-w-[85%] ${
-                            m.sender === 'user' ? 'bg-[#D1A954] text-black font-bold rounded-tr-none' : 'bg-white/[0.03] border border-white/10 rounded-tl-none'
-                          }`}>
+                          <div className={`p-6 rounded-[2rem] text-[13px] leading-relaxed max-w-[85%] ${m.sender === 'user' ? 'bg-[#D1A954] text-black font-bold rounded-tr-none' : 'bg-white/[0.03] border border-white/10 rounded-tl-none'}`}>
                             {m.text}
                           </div>
                         </motion.div>
@@ -256,9 +250,7 @@ const Quote: React.FC = () => {
                           {CHAT_FLOW_BILINGUAL[lang][currentStep]?.options && !isTyping ? (
                             <div className="flex flex-wrap gap-2">
                               {CHAT_FLOW_BILINGUAL[lang][currentStep].options?.map((o: any) => (
-                                <button key={o.value} type="button" onClick={() => onOption(o)} className="px-6 py-4 border border-white/10 rounded-full text-[10px] font-black uppercase tracking-widest hover:border-[#D1A954] hover:text-[#D1A954] bg-white/[0.02] transition-all">
-                                  {o.label}
-                                </button>
+                                <button key={o.value} type="button" onClick={() => onOption(o)} className="px-6 py-4 border border-white/10 rounded-full text-[10px] font-black uppercase tracking-widest hover:border-[#D1A954] hover:text-[#D1A954] bg-white/[0.02] transition-all">{o.label}</button>
                               ))}
                             </div>
                           ) : (
