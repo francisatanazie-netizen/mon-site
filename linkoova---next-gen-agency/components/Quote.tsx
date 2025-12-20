@@ -1,19 +1,26 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Send, Bot, CheckCircle, RefreshCcw, ArrowRight, Sparkles } from 'lucide-react';
+import { Send, Bot, CheckCircle, Sparkles, Languages, RefreshCcw, ArrowRight } from 'lucide-react';
 import { CHAT_FLOW_BILINGUAL, Language } from '../constants/chatData';
 
 const Quote: React.FC = () => {
   const [lang, setLang] = useState<Language | null>(null);
   const [currentStep, setCurrentStep] = useState('start');
-  const [messages, setMessages] = useState([{ id: '0', sender: 'bot', text: "Hello! / Bonjour ! 👋 Choose your language / Choisissez votre langue." }]);
+  const [messages, setMessages] = useState([{ id: '0', sender: 'bot', text: "Welcome to Linkoova's Strategic Hub. / Bienvenue sur le hub stratégique de Linkoova." }]);
   const [isTyping, setIsTyping] = useState(false);
   const [inputValue, setInputValue] = useState('');
+  const [progress, setProgress] = useState(0);
   const [loading, setLoading] = useState({ active: false, progress: 0 });
   const [success, setSuccess] = useState(false);
+  
   const chatEndRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => chatEndRef.current?.scrollIntoView({ behavior: 'smooth' }), [messages, isTyping]);
+  // --- FIX AUTO-SCROLL ---
+  useEffect(() => {
+    if (chatEndRef.current) {
+      chatEndRef.current.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+  }, [messages, isTyping]);
 
   const handleLanguage = (l: Language) => {
     setLang(l);
@@ -22,18 +29,18 @@ const Quote: React.FC = () => {
 
   const processNext = (step: string) => {
     if (!lang) return;
+    const stepNum = step.match(/\d+/) ? parseInt(step.match(/\d+/)![0]) : 0;
+    setProgress((stepNum / 15) * 100);
+
     if (step === 'loading') return startLoading();
 
     setIsTyping(true);
     setTimeout(() => {
       const data = CHAT_FLOW_BILINGUAL[lang][step];
-      const reactions = lang === 'FR' ? ["Parfait.", "Je vois.", "Très bien."] : ["Got it.", "Perfect.", "Interesting."];
-      const randomReaction = reactions[Math.floor(Math.random() * reactions.length)];
-      
-      setMessages(prev => [...prev, { id: Date.now().toString(), sender: 'bot', text: `${randomReaction} ${data.text}` }]);
+      setMessages(prev => [...prev, { id: Date.now().toString(), sender: 'bot', text: data.text }]);
       setCurrentStep(step);
       setIsTyping(false);
-    }, 1000);
+    }, 900);
   };
 
   const onOption = (opt: any) => {
@@ -53,122 +60,127 @@ const Quote: React.FC = () => {
   const startLoading = () => {
     setLoading({ active: true, progress: 0 });
     const inv = setInterval(() => {
-      setLoading(prev => {
-        if (prev.progress >= 100) {
-          clearInterval(inv);
-          setTimeout(() => { setLoading({ active: false, progress: 100 }); setSuccess(true); }, 800);
-          return { ...prev, progress: 100 };
-        }
-        return { ...prev, progress: prev.progress + 10 };
-      });
-    }, 300);
+      setLoading(p => p.progress >= 100 ? (clearInterval(inv), setTimeout(() => setSuccess(true), 500), p) : { ...p, progress: p.progress + 5 });
+    }, 120);
   };
 
   return (
-    <div className="bg-[#030303] min-h-screen pt-20 pb-20 relative overflow-hidden text-white font-sans">
+    <div className="bg-[#050505] min-h-screen pt-28 pb-20 relative overflow-hidden text-white selection:bg-[#D1A954]/30">
       
-      {/* --- LIVING BACKGROUND --- */}
-      <div className="fixed inset-0 z-0">
-        <motion.div animate={{ scale: [1, 1.2, 1], opacity: [0.3, 0.5, 0.3] }} transition={{ duration: 10, repeat: Infinity }}
-          className="absolute -top-40 -right-40 w-96 h-96 bg-[#D1A954]/20 rounded-full blur-[100px]" />
-        <motion.div animate={{ y: [0, -50, 0] }} transition={{ duration: 15, repeat: Infinity }}
-          className="absolute bottom-20 left-10 w-80 h-80 bg-indigo-600/10 rounded-full blur-[120px]" />
-        
-        {/* Fireflies (Particles) */}
-        {[...Array(10)].map((_, i) => (
-          <motion.div key={i} animate={{ y: [0, -100, 0], opacity: [0, 0.8, 0] }}
-            transition={{ duration: Math.random() * 5 + 5, repeat: Infinity, delay: i }}
-            className="absolute w-1 h-1 bg-[#D1A954] rounded-full blur-[1px]"
-            style={{ left: `${Math.random() * 100}%`, top: `${Math.random() * 100}%` }} />
-        ))}
+      {/* DECORATIVE ELEMENTS */}
+      <div className="absolute top-0 left-0 w-full h-full pointer-events-none opacity-20">
+        <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] bg-[#D1A954] rounded-full blur-[120px]" />
       </div>
 
       <div className="container mx-auto px-6 relative z-10">
-        <div className="grid lg:grid-cols-2 gap-12 items-center">
+        <div className="max-w-7xl mx-auto">
           
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
-            <div className="flex items-center gap-2 mb-4 text-[#D1A954]">
-              <Sparkles className="w-5 h-5 animate-pulse" />
-              <span className="text-xs font-bold uppercase tracking-widest">Next-Gen Audit</span>
-            </div>
-            <h1 className="text-6xl font-serif mb-6 leading-tight">Linkoova <br/><span className="text-[#D1A954]">Intelligence</span></h1>
-            <p className="text-gray-400 text-lg max-w-sm leading-relaxed italic">"Transforming vision into digital excellence through strategic data analysis."</p>
-          </motion.div>
+          <div className="mb-16">
+            <h1 className="text-6xl md:text-8xl font-serif leading-none italic mb-4">The <span className="text-[#D1A954] not-italic">Audit.</span></h1>
+            <p className="text-gray-500 uppercase tracking-widest text-[10px] font-bold">Hybrid strategy powered by Linkoova expertise.</p>
+          </div>
 
-          {/* CHAT BOX */}
-          <div className="relative w-full h-[600px] bg-black/40 border border-white/10 rounded-3xl backdrop-blur-3xl overflow-hidden flex flex-col shadow-2xl">
+          <div className="grid lg:grid-cols-12 gap-12 items-start">
             
-            {loading.active && (
-              <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="absolute inset-0 z-50 flex flex-col items-center justify-center bg-black/90 backdrop-blur-xl">
-                <div className="w-16 h-16 border-4 border-white/10 border-t-[#D1A954] rounded-full animate-spin mb-4" />
-                <p className="text-[#D1A954] font-bold tracking-tighter text-2xl">{loading.progress}%</p>
-                <p className="text-xs uppercase tracking-widest mt-2 text-gray-500">Generating Roadmap...</p>
-              </motion.div>
-            )}
-
-            {success ? (
-              <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="flex-1 flex flex-col items-center justify-center p-10 text-center">
-                <div className="w-16 h-16 bg-[#D1A954] rounded-full flex items-center justify-center mb-6 shadow-[0_0_40px_rgba(209,169,84,0.4)]">
-                  <CheckCircle className="w-8 h-8 text-black" />
-                </div>
-                <h3 className="text-3xl font-serif mb-4">Strategic Data Received</h3>
-                <p className="text-gray-400 text-sm mb-8">Our analysts are processing your project. You will receive the 360 roadmap shortly.</p>
-                <button className="group flex items-center gap-3 bg-white text-black px-6 py-3 rounded-full font-bold transition-all hover:bg-[#D1A954]">
-                  Book Meeting <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-                </button>
-              </motion.div>
-            ) : (
-              <>
-                <div className="p-5 border-b border-white/5 flex items-center justify-between bg-white/[0.02]">
-                  <div className="flex items-center gap-3">
-                    <div className="w-3 h-3 bg-green-500 rounded-full animate-pulse" />
-                    <span className="text-[10px] font-bold uppercase tracking-widest text-gray-400">AI Assistant Active</span>
-                  </div>
-                  <RefreshCcw className="w-4 h-4 text-gray-600 hover:text-white cursor-pointer transition-colors" onClick={() => window.location.reload()} />
-                </div>
-
-                <div className="flex-1 overflow-y-auto p-6 space-y-6 no-scrollbar">
-                  {messages.map((m, i) => (
-                    <motion.div key={i} initial={{ opacity: 0, x: m.sender === 'user' ? 20 : -20 }} animate={{ opacity: 1, x: 0 }}
-                      className={`flex ${m.sender === 'user' ? 'justify-end' : 'justify-start'}`}>
-                      <div className={`p-4 rounded-2xl text-sm leading-relaxed max-w-[85%] ${m.sender === 'user' ? 'bg-[#D1A954] text-black rounded-tr-none font-medium' : 'bg-white/5 border border-white/10 rounded-tl-none text-gray-200'}`}>
-                        {m.text}
-                      </div>
-                    </motion.div>
-                  ))}
-                  {isTyping && <motion.div animate={{ opacity: [0.4, 1, 0.4] }} transition={{ repeat: Infinity, duration: 1.5 }} className="text-[#D1A954] text-[10px] font-bold uppercase">AI Analysis...</motion.div>}
-                  <div ref={chatEndRef} />
-                </div>
-
-                <div className="p-5 bg-white/[0.02] border-t border-white/5">
-                  {!lang ? (
-                    <div className="flex gap-3">
-                      {['FR', 'EN'].map(l => (
-                        <button key={l} onClick={() => handleLanguage(l as Language)} className="flex-1 py-3 border border-white/10 rounded-xl hover:bg-white hover:text-black font-bold transition-all">{l}</button>
-                      ))}
+            {/* PROGRESS SIDEBAR */}
+            <div className="lg:col-span-4 hidden lg:block sticky top-28">
+              <div className="p-10 rounded-[2.5rem] bg-white/[0.02] border border-white/10 backdrop-blur-3xl">
+                <h3 className="text-[#D1A954] font-serif text-2xl mb-8 italic">Strategic Pillars</h3>
+                <div className="space-y-8">
+                  {['Vision', 'Target Market', 'Design Emotion', 'Technical Core', 'Business Closing'].map((p, i) => (
+                    <div key={i} className="flex items-center gap-4">
+                      <div className={`w-1.5 h-1.5 rounded-full ${progress > (i * 20) ? 'bg-[#D1A954] shadow-[0_0_8px_#D1A954]' : 'bg-white/10'}`} />
+                      <span className={`text-[10px] font-black uppercase tracking-widest ${progress > (i * 20) ? 'text-white' : 'text-gray-600'}`}>{p}</span>
                     </div>
-                  ) : (
-                    <form onSubmit={onInput} className="flex gap-2">
-                      {CHAT_FLOW_BILINGUAL[lang][currentStep]?.options && !isTyping ? (
-                        <div className="flex flex-wrap gap-2">
-                          {CHAT_FLOW_BILINGUAL[lang][currentStep].options?.map((o: any) => (
-                            <button key={o.value} type="button" onClick={() => onOption(o)} className="px-4 py-2 bg-white/5 border border-white/10 rounded-full text-[11px] hover:border-[#D1A954] hover:text-[#D1A954] transition-all">
-                              {o.label}
-                            </button>
-                          ))}
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {/* CHAT CONTAINER */}
+            <div className="lg:col-span-8 sticky top-28">
+              <div className="h-[650px] bg-black border border-white/10 rounded-[3rem] overflow-hidden flex flex-col shadow-2xl relative">
+                
+                {/* TOP PROGRESS BAR */}
+                <div className="absolute top-0 left-0 w-full h-1 bg-white/5 z-20">
+                  <motion.div className="h-full bg-[#D1A954]" animate={{ width: `${progress}%` }} />
+                </div>
+
+                <AnimatePresence>
+                  {loading.active && (
+                    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="absolute inset-0 z-50 flex flex-col items-center justify-center bg-black/95">
+                      <div className="w-20 h-20 border-2 border-white/5 rounded-full flex items-center justify-center mb-6">
+                        <motion.div animate={{ rotate: 360 }} transition={{ repeat: Infinity, duration: 1 }} className="absolute inset-0 border-t-2 border-[#D1A954] rounded-full" />
+                        <span className="text-[#D1A954] font-serif">{loading.progress}%</span>
+                      </div>
+                      <p className="text-[10px] uppercase tracking-[0.4em] text-[#D1A954] animate-pulse">Processing 360° Data</p>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+
+                {success ? (
+                  <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="flex-1 flex flex-col items-center justify-center p-12 text-center">
+                    <div className="w-24 h-24 bg-[#D1A954] rounded-full flex items-center justify-center mb-8 shadow-2xl shadow-[#D1A954]/20"><CheckCircle size={40} className="text-black"/></div>
+                    <h2 className="text-5xl font-serif mb-6 italic">Strategic Data <span className="text-[#D1A954] not-italic">Received.</span></h2>
+                    <p className="text-gray-400 mb-10 max-w-sm mx-auto leading-relaxed text-sm">
+                      {lang === 'FR' ? "Nos analystes traitent votre projet. Vous recevrez votre roadmap 360° sous peu." : "Our analysts are processing your project. You will receive the 360° roadmap shortly."}
+                    </p>
+                    <button onClick={() => window.location.href = '/'} className="bg-white text-black px-10 py-5 rounded-full font-black text-[10px] uppercase tracking-widest flex items-center gap-3 hover:bg-[#D1A954] transition-all">Back to Vision <ArrowRight size={14}/></button>
+                  </motion.div>
+                ) : (
+                  <>
+                    <div className="p-8 border-b border-white/5 flex items-center justify-between bg-white/[0.01]">
+                      <div className="flex items-center gap-4">
+                        <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-[#D1A954] to-white/20 flex items-center justify-center text-black shadow-lg"><Bot size={24}/></div>
+                        <div>
+                          <p className="text-[10px] font-black uppercase tracking-widest text-[#D1A954]">Audit Intelligence</p>
+                          <p className="text-xs font-bold">Linkoova Hub</p>
+                        </div>
+                      </div>
+                      <RefreshCcw size={16} className="text-gray-600 hover:text-white cursor-pointer" onClick={() => window.location.reload()} />
+                    </div>
+
+                    <div className="flex-1 overflow-y-auto p-8 space-y-8 no-scrollbar scroll-smooth">
+                      {messages.map((m, i) => (
+                        <motion.div key={i} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className={`flex ${m.sender === 'user' ? 'justify-end' : 'justify-start'}`}>
+                          <div className={`p-6 rounded-[2rem] text-[13px] leading-relaxed max-w-[80%] ${m.sender === 'user' ? 'bg-[#D1A954] text-black font-bold' : 'bg-white/5 border border-white/10 backdrop-blur-md'}`}>
+                            {m.text}
+                          </div>
+                        </motion.div>
+                      ))}
+                      {isTyping && <div className="flex gap-2 p-4 opacity-40"><span className="w-1.5 h-1.5 bg-[#D1A954] rounded-full animate-bounce"/><span className="w-1.5 h-1.5 bg-[#D1A954] rounded-full animate-bounce [animation-delay:0.2s]"/><span className="w-1.5 h-1.5 bg-[#D1A954] rounded-full animate-bounce [animation-delay:0.4s]"/></div>}
+                      <div ref={chatEndRef} />
+                    </div>
+
+                    <div className="p-8 bg-white/[0.02] border-t border-white/5 backdrop-blur-xl">
+                      {!lang ? (
+                        <div className="grid grid-cols-2 gap-4">
+                          <button onClick={() => handleLanguage('EN')} className="py-5 border border-white/10 rounded-2xl font-black uppercase text-[10px] tracking-[0.2em] hover:bg-white hover:text-black transition-all">English</button>
+                          <button onClick={() => handleLanguage('FR')} className="py-5 border border-white/10 rounded-2xl font-black uppercase text-[10px] tracking-[0.2em] hover:bg-white hover:text-black transition-all">Français</button>
                         </div>
                       ) : (
-                        <>
-                          <input type="text" value={inputValue} onChange={e => setInputValue(e.target.value)} disabled={isTyping}
-                            placeholder={lang === 'FR' ? "Écrivez ici..." : "Type here..."} className="flex-1 bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-[#D1A954]" />
-                          <button type="submit" className="bg-[#D1A954] text-black p-3 rounded-xl hover:bg-white transition-colors"><Send className="w-5 h-5" /></button>
-                        </>
+                        <form onSubmit={onInput} className="flex flex-col gap-4">
+                          {CHAT_FLOW_BILINGUAL[lang][currentStep]?.options && !isTyping ? (
+                            <div className="flex flex-wrap gap-2">
+                              {CHAT_FLOW_BILINGUAL[lang][currentStep].options?.map((o: any) => (
+                                <button key={o.value} type="button" onClick={() => onOption(o)} className="px-6 py-3 border border-white/10 rounded-full text-[10px] font-black uppercase hover:border-[#D1A954] hover:text-[#D1A954] transition-all tracking-tighter">
+                                  {o.label}
+                                </button>
+                              ))}
+                            </div>
+                          ) : (
+                            <div className="flex gap-4">
+                              <input type="text" value={inputValue} onChange={e => setInputValue(e.target.value)} disabled={isTyping} placeholder="..." className="flex-1 bg-white/5 border border-white/10 rounded-2xl px-6 py-5 text-sm focus:outline-none focus:border-[#D1A954]" />
+                              <button type="submit" disabled={isTyping} className="bg-[#D1A954] text-black p-5 rounded-2xl hover:scale-105 transition-all disabled:opacity-50 shadow-lg shadow-[#D1A954]/20"><Send size={20}/></button>
+                            </div>
+                          )}
+                        </form>
                       )}
-                    </form>
-                  )}
-                </div>
-              </>
-            )}
+                    </div>
+                  </>
+                )}
+              </div>
+            </div>
           </div>
         </div>
       </div>
